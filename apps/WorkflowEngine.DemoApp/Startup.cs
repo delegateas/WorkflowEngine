@@ -83,7 +83,6 @@ namespace WorkflowEngine.DemoApp
             services.AddTransient<IActionExecutor, ActionExecutor>();
             services.AddTransient<IHangfireWorkflowExecutor, HangfireWorkflowExecutor>();
             services.AddTransient<IHangfireActionExecutor, HangfireWorkflowExecutor>();
-
             services.AddSingleton<IWorkflowRepository, DefaultWorkflowRepository>();
             services.AddAction<SendEmailAction>(SendEmailAction.SendEmailActionType);
             services.AddAction<EAVCreateAction>(EAVCreateAction.EAVCreateActionType);
