@@ -1,0 +1,22 @@
+﻿branches:
+  - name: master
+  - name: dev
+    prerelease: dev
+
+plugins:
+  - - "@semantic-release/commit-analyzer"
+    - preset: conventionalcommits
+
+  - - "@semantic-release/release-notes-generator"
+    - preset: conventionalcommits
+
+  - - "@semantic-release/github"
+    - assets:
+        - path: ../../artifacts/WorkflowEngine.*.nupkg
+          label: Delegate.Workflow package
+
+  - - "@semantic-release/exec"
+    - publishCmd: "dotnet nuget push ..\\..\\artifacts\\Delegate.WorkflowEngine.*.nupkg --source https://nuget.pkg.github.com/delegateas/index.json --api-key ${process.env.GITHUB_TOKEN}"
+
+  - - "@semantic-release/exec"
+    - publishCmd: "dotnet nuget push ..\\..\\artifacts\\Delegate.WorkflowEngine.*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${process.env.CI_NUGET_API_KEY}"
