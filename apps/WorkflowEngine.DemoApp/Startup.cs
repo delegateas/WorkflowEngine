@@ -51,22 +51,17 @@ namespace WorkflowEngine.DemoApp
    
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
-        public IConfiguration Configuration { get; }
+      
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHangfire(configuration => configuration
+            services.AddHangfire((sp , configuration) => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseSqlServerStorage(
-                    Configuration.GetValue<string>("ConnectionString"),
+                    sp.GetRequiredService<IConfiguration>().GetValue<string>("ConnectionString"),
                     new SqlServerStorageOptions
                     {
                         CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
