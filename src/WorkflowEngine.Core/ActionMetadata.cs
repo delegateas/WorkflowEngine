@@ -7,7 +7,7 @@ namespace WorkflowEngine.Core
     {
         public WorkflowRunAfterActions RunAfter { get; set; } = new WorkflowRunAfterActions();
         public string Type { get;  set; }
-        public IDictionary<string, string> Inputs { get; set; } = new Dictionary<string, string>();
+        public IDictionary<string, object> Inputs { get; set; } = new Dictionary<string, object>();
 
     }
 
