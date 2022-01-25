@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31320.298
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowEngine.Core", "src\WorkflowEngine.Core\WorkflowEngine.Core.csproj", "{44ED38AB-742A-455D-8451-BB0947E76E43}"
 EndProject
@@ -10,7 +10,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0749C5E8-52D4-4B3A-89EA-891DD156A056}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		.github\workflows\.releaserc = .github\workflows\.releaserc
+		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\prerelease.yml = .github\workflows\prerelease.yml
 		README.md = README.md
+		.github\workflows\release.yml = .github\workflows\release.yml
+		.github\workflows\todo.yml = .github\workflows\todo.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowEngine.Hangfire", "src\WorkflowEngine.Hangfire\WorkflowEngine.Hangfire.csproj", "{7A50D90B-98AE-4B7F-9B39-8828D9ACED5B}"
