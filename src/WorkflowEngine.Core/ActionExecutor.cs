@@ -6,33 +6,6 @@ using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core
 {
-    public interface IActionImplementationMetadata{
-         string Type { get;  }
-        Type Implementation { get;  }
-    }
-    public class ActionImplementationMetadata<T> : IActionImplementationMetadata 
-        where T: IActionImplementation
-    {
-        public string Type { get; set; }
-        public Type Implementation => typeof(T);
-    }
-    public static class IActionImplementationExtenssions
-    {
-        public static IServiceCollection AddAction<T>(this IServiceCollection services, string type)
-            where T: class, IActionImplementation
-        {
-            return services.AddTransient<T>()
-                .AddSingleton< IActionImplementationMetadata>(new ActionImplementationMetadata<T> { Type = type });
-        }
-    }
-    public interface IActionImplementation
-    {
-         
-       
-        ValueTask<object> ExecuteAsync(IWorkflow workflow, IAction action);
-
-
-    }
     public class ActionExecutor : IActionExecutor
     {
         private readonly IServiceProvider serviceProvider;

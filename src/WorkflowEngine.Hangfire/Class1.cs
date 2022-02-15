@@ -1,20 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using WorkflowEngine.Core;
 
 namespace WorkflowEngine
 {
-    public interface IHangfireActionExecutor
-    {
-        [DisplayName("Action: {0}")]
-        public ValueTask<object> ExecuteAsync(string type, IWorkflow workflow, IAction action);
-    }
-    public interface IHangfireWorkflowExecutor
-    {
-        [DisplayName("Trigger: {0}")]
-        public ValueTask<object> TriggerAsync(ITriggerContext context);
-    }
 
     public class HangfireWorkflowExecutor : IHangfireWorkflowExecutor, IHangfireActionExecutor
     {
