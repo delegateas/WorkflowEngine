@@ -1,5 +1,7 @@
 ﻿branches:
   - name: master
+  - name: 'releases/+([0-9])?(.{+([0-9]),x}).x'
+    prerelease: true
   - name: dev
     prerelease: dev
 
