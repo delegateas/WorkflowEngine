@@ -130,3 +130,5 @@ Service Registration
         }
     });
 ```
+
+### TODO Show Loop example

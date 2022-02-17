@@ -7,12 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hangfire" Version="1.7.24"/>
+        <PackageReference Include="Hangfire" Version="1.7.28" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\WorkflowEngine.Core\WorkflowEngine.Core.csproj"/>
-        <ProjectReference Include="..\..\src\WorkflowEngine.Hangfire\WorkflowEngine.Hangfire.csproj"/>
+        <ProjectReference Include="..\..\src\WorkflowEngine.Core\WorkflowEngine.Core.csproj" />
+        <ProjectReference Include="..\..\src\WorkflowEngine.Hangfire\WorkflowEngine.Hangfire.csproj" />
     </ItemGroup>
 
 </Project>

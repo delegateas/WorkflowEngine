@@ -4,11 +4,11 @@ namespace WorkflowEngine.Core
 {
     public static class IActionImplementationExtenssions
     {
-        public static IServiceCollection AddAction<T>(this IServiceCollection services, string type)
+        public static IServiceCollection AddAction<T>(this IServiceCollection services, string type = null)
             where T: class, IActionImplementation
         {
             return services.AddTransient<T>()
-                .AddSingleton< IActionImplementationMetadata>(new ActionImplementationMetadata<T> { Type = type });
+                .AddSingleton< IActionImplementationMetadata>(new ActionImplementationMetadata<T> { Type = type ?? typeof(T).Name });
         }
     }
     

@@ -1,8 +1,13 @@
-﻿namespace WorkflowEngine.Core
+﻿using System;
+
+namespace WorkflowEngine.Core
 {
-    public interface ITriggerContext
+    public interface ITriggerContext:IRunContext
     {
         IWorkflow Workflow { get; }
+        ITrigger Trigger { get; set; }
+       
+       
     }
 
 
