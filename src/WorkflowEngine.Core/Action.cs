@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WorkflowEngine.Core
 {
@@ -8,6 +9,10 @@ namespace WorkflowEngine.Core
 
         public string Type { get; set; }
         public string Key { get; set; }
+        public Guid RunId { get;  set; }
+        public IDictionary<string, object> Inputs { get; set; }
+        public int Index { get; set; }
+        public bool ScopeMoveNext { get; set; }
 
         public string ToString(string format, IFormatProvider formatProvider)
         {

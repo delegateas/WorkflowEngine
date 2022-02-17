@@ -7,7 +7,7 @@ namespace WorkflowEngine
 {
     public interface IHangfireWorkflowExecutor
     {
-        [JobDisplayName("Trigger: {0:WorkFlow}")]
+        [JobDisplayName("Trigger: {0:Workflow} RunId={0:Id}")]
         public ValueTask<object> TriggerAsync(ITriggerContext context);
     }
 
