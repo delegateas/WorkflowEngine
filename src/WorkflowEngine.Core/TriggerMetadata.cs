@@ -6,6 +6,8 @@ namespace WorkflowEngine.Core
     {
       
         public string Type { get; set; }
+
+        public Dictionary<string, object> Inputs { get; set; } = new Dictionary<string, object>();
     }
 
 
