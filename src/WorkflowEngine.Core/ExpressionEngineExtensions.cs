@@ -33,23 +33,27 @@ namespace WorkflowEngine.Core
         public static async ValueTask<IDictionary<string,object>> ResolveInputs(this IExpressionEngine engine, ActionMetadata actionMetadata, ILogger logger)
         {
 
-            var inputs = actionMetadata.Inputs;
+            var resolvedInputs = new Dictionary<string, object>();
 
-            foreach (var input in inputs.Keys.ToArray())
+            foreach (var input in actionMetadata.Inputs)
             {
-                if (inputs[input] is string str && str.Contains("@"))
+                if (input.Value is string str && str.Contains("@"))
                 {
-                    inputs[input] = await engine.ParseToValueContainer(str);
+                    resolvedInputs[input.Key] = await engine.ParseToValueContainer(str);
                 }
                 else
                 {
-
-                    logger.LogWarning("{Key}: {Type}", input, inputs[input].GetType());
+                    resolvedInputs[input.Key] = input.Value;
                 }
+                //else
+                //{
+
+                //    logger.LogWarning("{Key}: {Type}", input, inputs[input].GetType());
+                //}
                 //  inputs[input] = inputs[input];
             }
 
-            return inputs;
+            return resolvedInputs;
         }
     }
 }

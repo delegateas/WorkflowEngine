@@ -89,7 +89,7 @@ namespace WorkflowEngine.DemoApp
     {
         public ValueTask<object> ExecuteAsync(IRunContext context, IWorkflow workflow, IAction action)
         {
-            var next = workflow.Manifest.Actions.FindAction(action.Key);
+           // var next = workflow.Manifest.Actions.FindAction(action.Key);
 
             return new ValueTask<object>(new { formsubmissionid = Guid.NewGuid() });
         }
@@ -98,9 +98,13 @@ namespace WorkflowEngine.DemoApp
     {
         public ValueTask<object> ExecuteAsync(IRunContext context, IWorkflow workflow, IAction action)
         {
-            var next = workflow.Manifest.Actions.FindAction(action.Key);
+            //var actionMetadata = workflow.Manifest.Actions.FindAction(action.Key);
 
-            return new ValueTask<object>(new { id = Guid.NewGuid() });
+            var inputs = action.Inputs;
+
+            var submissions = inputs["formsubmissionid"] as ValueContainer;
+
+            return new ValueTask<object>(new { id = submissions.GetValue<Guid>() });
         }
     }
    

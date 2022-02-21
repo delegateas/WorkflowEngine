@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -85,7 +86,10 @@ namespace WorkflowEngine.Core
 
             var obj = GetOrCreateStateObject(v, run);
 
-            return new ValueTask<object>(obj);
+            var json = JsonConvert.SerializeObject(obj);
+
+
+            return new ValueTask<object>(JToken.Parse(json));
         }
 
         public ValueTask AddArrayItemAsync(IRunContext context, IWorkflow workflow, string key, IActionResult result)

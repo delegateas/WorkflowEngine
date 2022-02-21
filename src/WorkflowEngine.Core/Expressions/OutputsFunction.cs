@@ -27,9 +27,10 @@ namespace WorkflowEngine.Core.Expressions
             {
                 key = $"{scopeContext.Scope.Substring(0, scopeContext.Scope.LastIndexOf('.'))}.{key}";
             }
+
             var triggerData = JToken.FromObject(await outputsRepository.GetOutputData(id, key));
 
-            var parsed= await ValueContainerExtension.CreateValueContainerFromJToken(triggerData);
+            var parsed = await ValueContainerExtension.CreateValueContainerFromJToken(triggerData);
 
             return parsed;
         }
