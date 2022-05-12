@@ -76,6 +76,7 @@ namespace WorkflowEngine
         /// <returns></returns>
         public async ValueTask<object> TriggerAsync(ITriggerContext context)
         {
+            context.RunId = context.RunId == Guid.Empty? Guid.NewGuid() : context.RunId;
             runContextAccessor.RunContext = context;
             var action = await executor.Trigger(context);
 
