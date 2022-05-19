@@ -10,6 +10,11 @@ namespace WorkflowEngine.Core
             return services.AddTransient<T>()
                 .AddSingleton< IActionImplementationMetadata>(new ActionImplementationMetadata<T> { Type = type ?? typeof(T).Name });
         }
+
+        public static IServiceCollection AddWorkflow<T>(this IServiceCollection services) where T :class, IWorkflow
+        {
+            return services.AddTransient<IWorkflow, T>();
+        }
     }
     
 
