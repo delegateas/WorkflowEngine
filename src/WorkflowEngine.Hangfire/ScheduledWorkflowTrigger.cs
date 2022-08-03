@@ -40,10 +40,22 @@ namespace WorkflowEngine
             if (create)
             {
                 var workflow = new TWorkflow();
-                workflow.Manifest.Triggers.First().Value.Inputs = inputs;
+                var trigger = new Trigger
+                {
+                    Inputs = inputs,
+                    ScheduledTime = DateTimeOffset.UtcNow,
+                    Type = workflow.Manifest.Triggers.FirstOrDefault().Value.Type,
+                    Key = workflow.Manifest.Triggers.FirstOrDefault().Key
+                };
+                
+                 
+
+                //TODO - avoid sending all workflow over hangfire,
+                workflow.Manifest = null;
 
                 var job = _backgroundJobClient.Schedule<IHangfireWorkflowExecutor>((executor) => executor.TriggerAsync(
-                    new TriggerContext { Workflow = workflow, }), time);
+                    new TriggerContext { Workflow = workflow, Trigger = trigger ,
+                    }), time);
 
                 _logger.LogInformation("Created scheduled workflow job {JobID}", job);
 

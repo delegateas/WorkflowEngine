@@ -6,7 +6,11 @@ namespace WorkflowEngine.Core
     {
         public Guid Id { get;  }
         public string Version { get;  }
-        public WorkflowManifest Manifest { get; }
+        public WorkflowManifest Manifest { get; set; }
+
+
+      
+
 
     }
 

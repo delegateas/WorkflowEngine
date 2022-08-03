@@ -8,7 +8,8 @@ namespace WorkflowEngine.Core
         public Guid Id { get; set; }
         public string Version { get; set; }
         public WorkflowManifest Manifest { get; set; }
-
+        
+      
         public string ToString(string format, IFormatProvider formatProvider)
         {
             if (format == "Id")

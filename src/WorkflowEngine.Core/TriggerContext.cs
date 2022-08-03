@@ -18,7 +18,7 @@ namespace WorkflowEngine.Core
                 return $"{Workflow?.GetType().Name} workflow={Workflow?.Id} version={Workflow?.Version} trigger={Trigger?.Key}";
             }
             
-            if (format == "Id")
+            if (format == "Id" && RunId != Guid.Empty)
                 return RunId.ToString();
 
             return string.Empty;
