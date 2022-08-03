@@ -57,7 +57,7 @@ namespace WorkflowEngine
                 }else if(workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
                 {
 
-                    var scopeaction= new Action {ScopeMoveNext=true, RunId=run.RunId, Type = scope.Type, Key=action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime=DateTimeOffset.UtcNow };
+                    var scopeaction= run.CopyTo( new Action {ScopeMoveNext=true,  Type = scope.Type, Key=action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime=DateTimeOffset.UtcNow });
 
 
                     var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
@@ -76,7 +76,9 @@ namespace WorkflowEngine
         /// <returns></returns>
         public async ValueTask<object> TriggerAsync(ITriggerContext context)
         {
+           
             context.RunId = context.RunId == Guid.Empty? Guid.NewGuid() : context.RunId;
+
             runContextAccessor.RunContext = context;
             var action = await executor.Trigger(context);
 

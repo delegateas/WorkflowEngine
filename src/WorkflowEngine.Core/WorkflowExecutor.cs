@@ -39,7 +39,7 @@ namespace WorkflowEngine.Core
 
             if (next.Value.ShouldRun(priorResult.Key,priorResult.Status)) // .RunAfter[priorResult.Key].Contains(priorResult.Status))
             {
-                return new ValueTask<IAction>(new Action { RunId=context.RunId, Type = next.Value.Type, Key=next.Key, ScheduledTime=DateTimeOffset.UtcNow });
+                return new ValueTask<IAction>(context.CopyTo(new Action { Type = next.Value.Type, Key=next.Key, ScheduledTime=DateTimeOffset.UtcNow }));
             }
 
             return new ValueTask<IAction>();
@@ -58,7 +58,9 @@ namespace WorkflowEngine.Core
             if (action.IsDefault())
                 return null;
 
-            return new Action { Type = action.Value.Type, Key=action.Key, ScheduledTime = DateTimeOffset.UtcNow, RunId = context.RunId };
+            return context.CopyTo(
+                new Action { Type = action.Value.Type, Key=action.Key, ScheduledTime = DateTimeOffset.UtcNow }
+                );
         }
     }
 

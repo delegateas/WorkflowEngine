@@ -45,7 +45,7 @@ namespace WorkflowEngine.Core.Actions
                         // var nextAction = new Action { Type = action.Type, Key=action.Key, ScheduledTime = DateTimeOffset.UtcNow, RunId = context.RunId, Index = action.Index+1 };
                        
                         var nextactionmetadata = loop.Actions.SingleOrDefault(c => c.Value.RunAfter?.Count == 0);
-                        var nextaction = new Action { Type = nextactionmetadata.Value.Type, Key= $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, RunId = context.RunId, Index=action.Index };
+                        var nextaction = context.CopyTo( new Action { Type = nextactionmetadata.Value.Type, Key= $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index=action.Index });
                        
                        var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(arrayContext.JobId,
                                (executor) => executor.ExecuteAsync(context, workflow, nextaction,null));

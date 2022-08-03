@@ -6,6 +6,7 @@ namespace WorkflowEngine.Core
     {
         public IWorkflow Workflow { get; set; }
         public ITrigger Trigger { get; set; }
+        public string PrincipalId { get; set; }
 
         public Guid RunId { get; set; }
         

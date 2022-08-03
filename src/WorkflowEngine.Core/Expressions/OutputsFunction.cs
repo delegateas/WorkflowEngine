@@ -24,7 +24,7 @@ namespace WorkflowEngine.Core.Expressions
 
             var key = parameters[0].ToString();
             if (scopeContext.Scope.Contains("."))
-            {
+            {   
                 key = $"{scopeContext.Scope.Substring(0, scopeContext.Scope.LastIndexOf('.'))}.{key}";
             }
 

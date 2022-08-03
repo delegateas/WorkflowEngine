@@ -14,6 +14,7 @@ namespace WorkflowEngine.Core
         public int Index { get; set; }
         public bool ScopeMoveNext { get; set; }
 
+        public string PrincipalId { get; set; }
         public string ToString(string format, IFormatProvider formatProvider)
         {
             if (format == "Type")
