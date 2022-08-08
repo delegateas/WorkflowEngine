@@ -30,6 +30,19 @@ namespace WorkflowEngine
             return new ValueTask<WorkflowManifest>(workflows.FirstOrDefault(x=>x.Id == workflow.Id && workflow.Version == x.Version).Manifest);
         }
     }
+
+    public static class BackgroundClientExtensions
+    {
+        public static string TriggerAsync<TTriggerContext>(this IBackgroundJobClient backgroundJobClient, TTriggerContext trigger)
+            where TTriggerContext : TriggerContext
+        {
+            var job = backgroundJobClient.Enqueue<IHangfireWorkflowExecutor>(
+                        (executor) => executor.TriggerAsync(trigger));
+
+            return job;
+
+        }
+    }
     public class HangfireWorkflowExecutor : IHangfireWorkflowExecutor, IHangfireActionExecutor
     {
         private readonly IWorkflowAccessor workflowAccessor;

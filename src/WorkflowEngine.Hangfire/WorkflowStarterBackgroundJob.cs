@@ -36,7 +36,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     if (!trigger.Equals(default(KeyValuePair<string, TriggerMetadata>)))
                     {
-                         
+
+                        workflow.Manifest = null;
+
                         jobs.AddOrUpdate<IHangfireWorkflowExecutor>(workflow.Id.ToString(),
                             (executor) => executor.TriggerAsync(new TriggerContext
                             {

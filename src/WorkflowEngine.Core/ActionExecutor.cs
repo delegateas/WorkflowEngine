@@ -34,7 +34,10 @@ namespace WorkflowEngine.Core
             IExpressionEngine expressionEngine)
         {
            
-
+            if(implementations.GroupBy(k=>k.Type).Any(c=>c.Count() > 1))
+            {
+                throw new ArgumentException("Double registration of " + String.Join(",", implementations.GroupBy(k => k.Type).Where(c => c.Count() > 1).Select(c=>c.Key)));
+            }
             _implementations = implementations?.ToDictionary(k => k.Type) ?? throw new ArgumentNullException(nameof(implementations));
             this.outputsRepository=outputsRepository??throw new ArgumentNullException(nameof(outputsRepository));
             this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));

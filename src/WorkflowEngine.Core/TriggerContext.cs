@@ -1,7 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WorkflowEngine.Core
 {
+    public static class TriggerContextExtensions
+    {
+        public static TriggerContext CreateTrigger(this IWorkflow workflow, Dictionary<string, object> inputs)
+        {
+            var trigger = new TriggerContext
+            {
+                Workflow = workflow,
+                //  PrincipalId = httpcontext.User.FindFirstValue("sub"),
+                Trigger = new Trigger
+                {
+
+                    Inputs = inputs,
+                    ScheduledTime = DateTimeOffset.UtcNow,
+                    Type = workflow.Manifest.Triggers.FirstOrDefault().Value.Type,
+                    Key = workflow.Manifest.Triggers.FirstOrDefault().Key
+                },
+            };
+            
+            return trigger;
+        }
+    }
     public class TriggerContext : ITriggerContext, IFormattable
     {
         public IWorkflow Workflow { get; set; }
@@ -23,6 +46,8 @@ namespace WorkflowEngine.Core
 
             return string.Empty;
         }
+
+      
     }
 
 
