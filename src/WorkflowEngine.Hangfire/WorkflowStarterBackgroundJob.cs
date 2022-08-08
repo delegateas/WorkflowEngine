@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                     if (!trigger.Equals(default(KeyValuePair<string, TriggerMetadata>)))
                     {
-
+                         
                         workflow.Manifest = null;
 
                         jobs.AddOrUpdate<IHangfireWorkflowExecutor>(workflow.Id.ToString(),
@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
                                 {
                                     Inputs = trigger.Value.Inputs,
                                     ScheduledTime = DateTimeOffset.UtcNow,
-                                    Type = workflow.Manifest.Triggers.FirstOrDefault().Value.Type,
+                                    Type = trigger.Value.Type,
                                     Key = trigger.Key
                                 },
                             }), trigger.Value.Inputs["cronExpression"] as string);

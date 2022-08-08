@@ -120,7 +120,7 @@ namespace WorkflowEngine
             context.Workflow.Manifest ??= await workflowAccessor.GetWorkflowManifestAsync(context.Workflow);
 
             context.RunId = context.RunId == Guid.Empty? Guid.NewGuid() : context.RunId;
-
+         
             runContextAccessor.RunContext = context;
             var action = await executor.Trigger(context);
 
