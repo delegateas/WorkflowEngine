@@ -96,7 +96,7 @@ namespace WorkflowEngine.Core
             
             }catch(Exception ex)
             {
-                var result= new ActionResult { Key = action.Key, Status = "Failed", FailedReason=ex.ToString() };
+                var result= new ActionResult { Key = action.Key, Status = "Failed", FailedReason=ex.ToString(), ReThrow = (ex is  InvalidOperationException) };
                 try
                 {
                     await outputsRepository.AddAsync(context, workflow, action, result);

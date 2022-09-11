@@ -27,7 +27,7 @@ namespace WorkflowEngine
         }
         public ValueTask<WorkflowManifest> GetWorkflowManifestAsync(IWorkflow workflow)
         {
-            return new ValueTask<WorkflowManifest>(workflows.FirstOrDefault(x=>x.Id == workflow.Id && workflow.Version == x.Version).Manifest);
+            return new ValueTask<WorkflowManifest>(workflows.FirstOrDefault(x => x.Id == workflow.Id && workflow.Version == x.Version).Manifest);
         }
     }
 
@@ -44,7 +44,7 @@ namespace WorkflowEngine
         }
     }
     public interface IHangfireActionExecutorResultInspector
-    {   
+    {
         Task InspectAsync(IRunContext run, IWorkflow workflow, IActionResult result, IAction next);
     }
     public class DefaultHangfireActionExecutorResultInspector : IHangfireActionExecutorResultInspector
@@ -69,12 +69,12 @@ namespace WorkflowEngine
         {
             this.workflowAccessor = workflowAccessor ?? throw new ArgumentNullException(nameof(workflowAccessor));
             this.hangfireActionExecutorResultHandler = hangfireActionExecutorResultHandler ?? throw new ArgumentNullException(nameof(hangfireActionExecutorResultHandler));
-            this.backgroundJobClient=backgroundJobClient??throw new ArgumentNullException(nameof(backgroundJobClient));
-            this.arrayContext=arrayContext??throw new ArgumentNullException(nameof(arrayContext));
-            this.runContextAccessor=runContextAccessor;
+            this.backgroundJobClient = backgroundJobClient ?? throw new ArgumentNullException(nameof(backgroundJobClient));
+            this.arrayContext = arrayContext ?? throw new ArgumentNullException(nameof(arrayContext));
+            this.runContextAccessor = runContextAccessor;
             this.executor = executor ?? throw new ArgumentNullException(nameof(executor));
             this.actionExecutor = actionExecutor ?? throw new ArgumentNullException(nameof(actionExecutor));
-            this.outputRepository=actionResultRepository;
+            this.outputRepository = actionResultRepository;
         }
 
         /// <summary>
@@ -91,51 +91,65 @@ namespace WorkflowEngine
 
 
             runContextAccessor.RunContext = run;
-            arrayContext.JobId=context.BackgroundJob.Id;
+            arrayContext.JobId = context.BackgroundJob.Id;
 
 
-           
-            var result = await actionExecutor.ExecuteAsync(run, workflow, action);
-            
-
-
-
-            if (result != null)
+            try
             {
-                 
-                var next = await executor.GetNextAction(run, workflow, result);
+
+                var result = await actionExecutor.ExecuteAsync(run, workflow, action);
 
 
-                await hangfireActionExecutorResultHandler.InspectAsync(run, workflow, result, next);
 
-                if (next != null)
+
+
+                if (result != null)
                 {
-                    var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                               (executor) => executor.ExecuteAsync(run, workflow, next, null));
+
+                    var next = await executor.GetNextAction(run, workflow, result);
+
+
+                    await hangfireActionExecutorResultHandler.InspectAsync(run, workflow, result, next);
+
+                    if (next != null)
+                    {
+                        var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                                   (executor) => executor.ExecuteAsync(run, workflow, next, null));
+                    }
+                    else if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
+                    {
+
+                        var scopeaction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
+
+
+                        var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                                 (executor) => executor.ExecuteAsync(run, workflow, scopeaction, null));
+
+                        //await outputRepository.EndScope(run, workflow, action);
+                    }
+                    else if (result.Status == "Failed" && result.ReThrow)
+                    {
+
+                        throw new InvalidOperationException("Action failed: " + result.FailedReason) { Data = { ["ActionResult"] = result } };
+                    }
+
+
+
+
+
+
                 }
-                else if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
-                {
-
-                    var scopeaction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
 
 
-                    var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                             (executor) => executor.ExecuteAsync(run, workflow, scopeaction, null));
-
-                    //await outputRepository.EndScope(run, workflow, action);
-                } else if (result.Status == "Failed")
-                {
-                    context.SetJobParameter("RetryCount", 999);
-                    throw new InvalidOperationException("Action failed") { Data = { ["ActionResult"] = result } };
-                }
-
-
-
-
-
+                return result;
+            }
+            catch (InvalidOperationException ex)
+            {
+                context.SetJobParameter("RetryCount", 999);
+                throw;
             }
 
-            return result;
+
         }
         /// <summary>
         /// Runs on the background process in hangfire
@@ -147,8 +161,8 @@ namespace WorkflowEngine
             //TODO - avoid sending all workflow over hangfire,
             context.Workflow.Manifest ??= await workflowAccessor.GetWorkflowManifestAsync(context.Workflow);
 
-            context.RunId = context.RunId == Guid.Empty? Guid.NewGuid() : context.RunId;
-         
+            context.RunId = context.RunId == Guid.Empty ? Guid.NewGuid() : context.RunId;
+
             runContextAccessor.RunContext = context;
             var action = await executor.Trigger(context);
 
@@ -156,10 +170,10 @@ namespace WorkflowEngine
             {
                 //TODO - avoid sending all workflow over hangfire, so we should wipe the workflow.manifest before scheduling and restore it after.
                 context.Workflow.Manifest = null;
-                
+
 
                 var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                            (executor) => executor.ExecuteAsync(context, context.Workflow, action,null));
+                            (executor) => executor.ExecuteAsync(context, context.Workflow, action, null));
             }
             return action;
         }

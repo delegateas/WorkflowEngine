@@ -7,6 +7,7 @@
         string Status { get; }
         object Result { get;  }
         string FailedReason { get; }
+        public bool ReThrow { get;  }
     }
     
 
