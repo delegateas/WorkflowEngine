@@ -30,6 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddHostedService<WorkflowStarterBackgroundJob>();
 
             services.AddTransient<IWorkflowAccessor, DefaultWorkflowAccessor>();
+            services.AddTransient<IHangfireActionExecutorResultInspector, DefaultHangfireActionExecutorResultInspector>();
             return services;
         }
 

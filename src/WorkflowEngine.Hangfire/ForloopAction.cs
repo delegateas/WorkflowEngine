@@ -39,18 +39,40 @@ namespace WorkflowEngine.Core.Actions
 
                 if (items.Type() == ExpressionEngine.ValueType.Array)
                 {
-                    var aa = items.GetValue<List<ValueContainer>>();
-                    if (action.Index < aa.Count)
+                    var itemsToRunover = items.GetValue<List<ValueContainer>>();
+
+                    if (loop.ConcurrentCount > 1)
+                    {
+                        var pageSize = itemsToRunover.Count / loop.ConcurrentCount;
+                        
+                        foreach (var child in Enumerable.Range(0, loop.ConcurrentCount))
+                        {
+                            var nextactionmetadata = loop.Actions.SingleOrDefault(c => c.Value.RunAfter?.Count == 0);
+                            if (nextactionmetadata.Equals(default(KeyValuePair<string, ActionMetadata>)))
+                                throw new Exception("No action with no runafter could be found");
+
+                            var nextaction = context.CopyTo(new Action { Type = nextactionmetadata.Value.Type, Key = $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index = action.Index });
+
+                            var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(arrayContext.JobId,
+                                    (executor) => executor.ExecuteAsync(context, workflow, nextaction, null));
+
+                            return new { item = itemsToRunover[action.Index] };
+                        }
+                    }
+                    else if (action.Index < itemsToRunover.Count)
                     {
                         // var nextAction = new Action { Type = action.Type, Key=action.Key, ScheduledTime = DateTimeOffset.UtcNow, RunId = context.RunId, Index = action.Index+1 };
                        
                         var nextactionmetadata = loop.Actions.SingleOrDefault(c => c.Value.RunAfter?.Count == 0);
+                        if (nextactionmetadata.Equals( default(KeyValuePair<string, ActionMetadata>)))
+                            throw new Exception("No action with no runafter could be found");
+                        
                         var nextaction = context.CopyTo( new Action { Type = nextactionmetadata.Value.Type, Key= $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index=action.Index });
                        
                        var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(arrayContext.JobId,
                                (executor) => executor.ExecuteAsync(context, workflow, nextaction,null));
 
-                        return new { item = aa[action.Index] };
+                        return new { item = itemsToRunover[action.Index] };
                     }
 
                 }

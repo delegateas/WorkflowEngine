@@ -165,7 +165,7 @@ namespace WorkflowEngine.Core
             body.Add(actions);
            
 
-            action.Index= body.Count;
+            action.Index= body.Count; //TODO - test if action.index is set and we could basically count it ++ instead, because then we can move it out and control it better for parallel
 
             return new ValueTask();
 

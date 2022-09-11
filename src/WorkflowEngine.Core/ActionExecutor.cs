@@ -86,28 +86,26 @@ namespace WorkflowEngine.Core
                     Result = await actionImplementation.ExecuteAsync(context,workflow, action) 
                 };
 
-                {
-                    //if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata parent)
-                    //{
-                    //    await outputsRepository.AddArrayItemAsync(context, workflow, action.Key, result);
-                    //}
-                    //else 
-                    //if (actionMetadata is ForLoopActionMetadata)
-                    //{
-                    //    await outputsRepository.AddScopeItem(context, workflow, action, result);
-                    //}
-                    //else
-                    {
+                
+                    
                         await outputsRepository.AddAsync(context, workflow, action, result);
-                    }
-                }
+                 
 
                 return result;
            
             
             }catch(Exception ex)
             {
-                return new ActionResult { Key = action.Key, Status = "Failed", FailedReason=ex.ToString() };
+                var result= new ActionResult { Key = action.Key, Status = "Failed", FailedReason=ex.ToString() };
+                try
+                {
+                    await outputsRepository.AddAsync(context, workflow, action, result);
+                }
+                catch (Exception )
+                {
+
+                }
+                return result;
             }
         }
     }

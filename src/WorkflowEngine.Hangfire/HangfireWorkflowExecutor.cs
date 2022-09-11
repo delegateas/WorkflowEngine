@@ -43,9 +43,21 @@ namespace WorkflowEngine
 
         }
     }
+    public interface IHangfireActionExecutorResultInspector
+    {   
+        Task InspectAsync(IRunContext run, IWorkflow workflow, IActionResult result, IAction next);
+    }
+    public class DefaultHangfireActionExecutorResultInspector : IHangfireActionExecutorResultInspector
+    {
+        public Task InspectAsync(IRunContext run, IWorkflow workflow, IActionResult result, IAction next)
+        {
+            return Task.CompletedTask;
+        }
+    }
     public class HangfireWorkflowExecutor : IHangfireWorkflowExecutor, IHangfireActionExecutor
     {
         private readonly IWorkflowAccessor workflowAccessor;
+        private readonly IHangfireActionExecutorResultInspector hangfireActionExecutorResultHandler;
         private readonly IBackgroundJobClient backgroundJobClient;
         private readonly IRunContextAccessor runContextAccessor;
         private readonly IWorkflowExecutor executor;
@@ -53,9 +65,10 @@ namespace WorkflowEngine
         private readonly IOutputsRepository outputRepository;
         private readonly IArrayContext arrayContext;
 
-        public HangfireWorkflowExecutor(IWorkflowAccessor workflowAccessor, IBackgroundJobClient backgroundJobClient, IArrayContext arrayContext, IRunContextAccessor runContextAccessor, IWorkflowExecutor executor, IActionExecutor actionExecutor, IOutputsRepository actionResultRepository)
+        public HangfireWorkflowExecutor(IWorkflowAccessor workflowAccessor, IHangfireActionExecutorResultInspector hangfireActionExecutorResultHandler, IBackgroundJobClient backgroundJobClient, IArrayContext arrayContext, IRunContextAccessor runContextAccessor, IWorkflowExecutor executor, IActionExecutor actionExecutor, IOutputsRepository actionResultRepository)
         {
             this.workflowAccessor = workflowAccessor ?? throw new ArgumentNullException(nameof(workflowAccessor));
+            this.hangfireActionExecutorResultHandler = hangfireActionExecutorResultHandler ?? throw new ArgumentNullException(nameof(hangfireActionExecutorResultHandler));
             this.backgroundJobClient=backgroundJobClient??throw new ArgumentNullException(nameof(backgroundJobClient));
             this.arrayContext=arrayContext??throw new ArgumentNullException(nameof(arrayContext));
             this.runContextAccessor=runContextAccessor;
@@ -84,27 +97,42 @@ namespace WorkflowEngine
            
             var result = await actionExecutor.ExecuteAsync(run, workflow, action);
             
-           
+
+
 
             if (result != null)
             {
+                 
                 var next = await executor.GetNextAction(run, workflow, result);
+
+
+                await hangfireActionExecutorResultHandler.InspectAsync(run, workflow, result, next);
 
                 if (next != null)
                 {
                     var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                               (executor) => executor.ExecuteAsync(run, workflow, next,null));
-                }else if(workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
+                               (executor) => executor.ExecuteAsync(run, workflow, next, null));
+                }
+                else if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
                 {
 
-                    var scopeaction= run.CopyTo( new Action {ScopeMoveNext=true,  Type = scope.Type, Key=action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime=DateTimeOffset.UtcNow });
+                    var scopeaction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
 
 
                     var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
                              (executor) => executor.ExecuteAsync(run, workflow, scopeaction, null));
 
                     //await outputRepository.EndScope(run, workflow, action);
+                } else if (result.Status == "Failed")
+                {
+                    context.SetJobParameter("RetryCount", 999);
+                    throw new InvalidOperationException("Action failed") { Data = { ["ActionResult"] = result } };
                 }
+
+
+
+
+
             }
 
             return result;

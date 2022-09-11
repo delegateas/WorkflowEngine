@@ -6,6 +6,7 @@ namespace WorkflowEngine.Core
     public class ForLoopActionMetadata : ActionMetadata, IScopedActionMetadata
     {
         public object ForEach { get; set; }
+        public int ConcurrentCount { get; set; } = 1;
 
         public WorkflowActions Actions { get; set; } = new WorkflowActions();
 
