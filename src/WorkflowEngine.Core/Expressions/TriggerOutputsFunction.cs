@@ -14,17 +14,17 @@ namespace WorkflowEngine.Core.Expressions
         public IRunContext RunContext { get; set; }
     }
     
-    public class TriggerOutputsFunction : Function
+    public class TriggerOutputsFunction : IFunction
     {
         private readonly IOutputsRepository outputsRepository;
         private readonly IRunContextAccessor runContextFactory;
 
-        public TriggerOutputsFunction(IOutputsRepository outputsRepository,IRunContextAccessor runContextFactory) : base("triggerOutputs")
+        public TriggerOutputsFunction(IOutputsRepository outputsRepository,IRunContextAccessor runContextFactory)
         {
             this.outputsRepository=outputsRepository;
             this.runContextFactory=runContextFactory;
         }
-        public override async ValueTask<ValueContainer> ExecuteFunction(params ValueContainer[] parameters)
+        public async ValueTask<ValueContainer> ExecuteFunction(params ValueContainer[] parameters)
         {
             var run = runContextFactory.RunContext;
             var id = run.RunId;

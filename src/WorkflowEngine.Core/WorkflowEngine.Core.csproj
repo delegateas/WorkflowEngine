@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-		<TargetFrameworks>netcoreapp3.1;net5.0;net6.0</TargetFrameworks>
+		<TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>
 		
         <PackageId>Delegate.WorkflowEngine.Core</PackageId>
         <Authors>Delegate A/S</Authors>
@@ -10,19 +10,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Delegate.ExpressionEngine" Version="2.0.0-dev.14" />
         
     </ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
+		<PackageReference Include="Delegate.ExpressionEngine" Version="4.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+		<PackageReference Include="Delegate.ExpressionEngine" Version="4.1.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
 	</ItemGroup>

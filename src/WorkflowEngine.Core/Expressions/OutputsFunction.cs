@@ -5,19 +5,19 @@ using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core.Expressions
 {
-    public class OutputsFunction : Function
+    public class OutputsFunction : IFunction
     {
         private readonly IOutputsRepository outputsRepository;
         private readonly IRunContextAccessor runContextFactory;
         private readonly IScopeContext scopeContext;
 
-        public OutputsFunction(IOutputsRepository outputsRepository, IRunContextAccessor runContextFactory, IScopeContext scopeContext) : base("outputs")
+        public OutputsFunction(IOutputsRepository outputsRepository, IRunContextAccessor runContextFactory, IScopeContext scopeContext) 
         {
             this.outputsRepository=outputsRepository;
             this.runContextFactory=runContextFactory;
             this.scopeContext=scopeContext;
         }
-        public override async ValueTask<ValueContainer> ExecuteFunction(params ValueContainer[] parameters)
+        public async ValueTask<ValueContainer> ExecuteFunction(params ValueContainer[] parameters)
         {
             var run = runContextFactory.RunContext;
             var id = run.RunId;

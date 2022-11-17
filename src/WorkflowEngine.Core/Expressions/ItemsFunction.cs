@@ -5,17 +5,21 @@ using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core.Expressions
 {
-    public class ItemsFunction : Function
+   // [FunctionName("items")]
+    public class ItemsFunction : IFunction
     {
         private readonly IOutputsRepository outputsRepository;
         private readonly IRunContextAccessor runContextFactory;
 
-        public ItemsFunction(IOutputsRepository outputsRepository, IRunContextAccessor runContextFactory) : base("items")
+        public ItemsFunction(IOutputsRepository outputsRepository, IRunContextAccessor runContextFactory) //: base("items")
         {
             this.outputsRepository=outputsRepository;
             this.runContextFactory=runContextFactory;
         }
-        public override async ValueTask<ValueContainer> ExecuteFunction(params ValueContainer[] parameters)
+
+
+
+        public async ValueTask<ValueContainer> ExecuteFunction(params ValueContainer[] parameters)
         {
             var run = runContextFactory.RunContext;
             var id = run.RunId;
