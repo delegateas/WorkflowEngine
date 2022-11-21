@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ExpressionEngine;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,64 +8,104 @@ using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core
 {
-    public interface IActionImplementationMetadata{
-         string Type { get;  }
-        Type Implementation { get;  }
-    }
-    public class ActionImplementationMetadata<T> : IActionImplementationMetadata 
-        where T: IActionImplementation
+    public interface IScopeContext
     {
-        public string Type { get; set; }
-        public Type Implementation => typeof(T);
+        public string Scope { get; set; }
     }
-    public static class IActionImplementationExtenssions
+    public class ScopeContext : IScopeContext
     {
-        public static IServiceCollection AddAction<T>(this IServiceCollection services, string type)
-            where T: class, IActionImplementation
-        {
-            return services.AddTransient<T>()
-                .AddSingleton< IActionImplementationMetadata>(new ActionImplementationMetadata<T> { Type = type });
-        }
-    }
-    public interface IActionImplementation
-    {
-         
-       
-        ValueTask<object> ExecuteAsync(IWorkflow workflow, IAction action);
-
-
+        public string Scope { get; set; }
     }
     public class ActionExecutor : IActionExecutor
     {
+        private readonly IOutputsRepository outputsRepository;
         private readonly IServiceProvider serviceProvider;
+        private readonly ILogger logger;
+        private readonly IScopeContext scopeContext;
+        private readonly IExpressionEngine expressionEngine;
         private Dictionary<string, IActionImplementationMetadata> _implementations;
 
-        public ActionExecutor(IEnumerable<IActionImplementationMetadata> implementations, IServiceProvider serviceProvider)
+        public ActionExecutor(
+            IEnumerable<IActionImplementationMetadata> implementations, 
+            IOutputsRepository outputsRepository,
+            IServiceProvider serviceProvider,
+            ILogger<ActionExecutor> logger,
+            IScopeContext scopeContext,
+            IExpressionEngine expressionEngine)
         {
            
-
+            if(implementations.GroupBy(k=>k.Type).Any(c=>c.Count() > 1))
+            {
+                throw new ArgumentException("Double registration of " + String.Join(",", implementations.GroupBy(k => k.Type).Where(c => c.Count() > 1).Select(c=>c.Key)));
+            }
             _implementations = implementations?.ToDictionary(k => k.Type) ?? throw new ArgumentNullException(nameof(implementations));
+            this.outputsRepository=outputsRepository??throw new ArgumentNullException(nameof(outputsRepository));
             this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            this.logger=logger??throw new ArgumentNullException(nameof(logger));
+            this.scopeContext=scopeContext;
+            this.expressionEngine=expressionEngine??throw new ArgumentNullException(nameof(expressionEngine));
         }
-        public async ValueTask<IActionResult> ExecuteAsync(IWorkflow workflow, IAction action)
+        public async ValueTask<IActionResult> ExecuteAsync(IRunContext context, IWorkflow workflow, IAction action)
         {
             try
             {
-                var actionMetadata = workflow.Manifest.Actions.Single(k => k.Key == action.Key).Value;
 
+                if (action.ScopeMoveNext)
+                {
+                    await outputsRepository.EndScope(context, workflow, action);
+                }
+
+                var actionMetadata = workflow.Manifest.Actions.FindAction(action.Key);
+                scopeContext.Scope=action.Key;
+                action.Inputs = await expressionEngine.ResolveInputs(actionMetadata,logger);
+               
+                {
+                    //if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata parent)
+                    //{
+                    //    await outputsRepository.AddArrayInput(context, workflow, action);
+                    //}
+                    //else
+                    //if (actionMetadata is ForLoopActionMetadata)
+                    //{
+                    //    await outputsRepository.StartScope(context, workflow, action);
+                    //}
+                    //else
+                    {
+                        await outputsRepository.AddInput(context, workflow, action);
+                    }
+                }
+                 
                 var actionImplementation = serviceProvider.GetRequiredService(_implementations[actionMetadata.Type].Implementation) as IActionImplementation;
                  
 
-                return  new ActionResult { 
+
+
+                var result = new ActionResult { 
                     Key = action.Key, 
                     Status = "Succeded", 
-                    Result = await actionImplementation.ExecuteAsync(workflow,action) 
+                    Result = await actionImplementation.ExecuteAsync(context,workflow, action) 
                 };
+
+                
+                    
+                        await outputsRepository.AddAsync(context, workflow, action, result);
+                 
+
+                return result;
            
             
             }catch(Exception ex)
             {
-                return new ActionResult { Key = action.Key, Status = "Failed", FailedReason=ex.ToString() };
+                var result= new ActionResult { Key = action.Key, Status = "Failed", FailedReason=ex.ToString(), ReThrow = (ex is  InvalidOperationException) };
+                try
+                {
+                    await outputsRepository.AddAsync(context, workflow, action, result);
+                }
+                catch (Exception )
+                {
+
+                }
+                return result;
             }
         }
     }

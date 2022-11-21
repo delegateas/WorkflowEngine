@@ -1,20 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp3.1</TargetFramework>
+		<TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>
 
         <PackageId>Delegate.WorkflowEngine.Hangfire</PackageId>
         <Authors>Delegate A/S</Authors>
         <PackageDescription>WorkflowEngine used to execute workflows based on Json description.</PackageDescription>
         <RepositoryUrl>https://github.com/delegateas/WorkflowEngine</RepositoryUrl>
+        <RootNamespace>WorkflowEngine</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hangfire.Core" Version="1.7.24"/>
+        <PackageReference Include="Hangfire.Core" Version="1.7.31" />
+        
     </ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)'=='netcoreapp3.1'">
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.0" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+	</ItemGroup>
+
+	
+	 
     <ItemGroup>
-        <ProjectReference Include="..\WorkflowEngine.Core\WorkflowEngine.Core.csproj"/>
+        <ProjectReference Include="..\WorkflowEngine.Core\WorkflowEngine.Core.csproj" />
     </ItemGroup>
 
 </Project>

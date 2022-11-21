@@ -5,3 +5,5 @@
 .vs
 bin
 obj
+/src/WorkflowEngine.Core/test1.txt
+/src/WorkflowEngine.Hangfire/test1.txt
