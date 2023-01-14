@@ -98,17 +98,12 @@ namespace WorkflowEngine
             {
 
                 var result = await actionExecutor.ExecuteAsync(run, workflow, action);
-
-
-
-
+                 
 
                 if (result != null)
-                {
-
+                { 
                     var next = await executor.GetNextAction(run, workflow, result);
-
-
+                     
                     await hangfireActionExecutorResultHandler.InspectAsync(run, workflow, result, next);
 
                     if (next != null)
@@ -116,13 +111,13 @@ namespace WorkflowEngine
                         var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
                                    (executor) => executor.ExecuteAsync(run, workflow, next, null));
                     }
-                    else if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
+                    else if (workflow.Manifest.Actions.FindParentAction(action.Key) is IScopedActionMetadata scope)
                     {
 
                         var scopeaction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
 
-
-                        var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                       
+                        var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(context.BackgroundJob.Id,
                                  (executor) => executor.ExecuteAsync(run, workflow, scopeaction, null));
 
                         //await outputRepository.EndScope(run, workflow, action);

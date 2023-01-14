@@ -14,6 +14,7 @@ namespace WorkflowEngine.Core
     public interface IScopedActionMetadata
     {
         WorkflowActions Actions { get; set; }
+        string Type { get; set; }
     }
     public class WorkflowActions : Dictionary<string, ActionMetadata>
     {
