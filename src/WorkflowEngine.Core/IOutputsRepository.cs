@@ -15,7 +15,6 @@ namespace WorkflowEngine.Core
         ValueTask StartScope(IRunContext context, IWorkflow workflow, IAction action);
         ValueTask AddScopeItem(IRunContext context, IWorkflow workflow, IAction action, IActionResult result);
         ValueTask EndScope(IRunContext run, IWorkflow workflow, IAction action);
+        ValueTask AddEvent(IRunContext run, IWorkflow workflow, IAction action, Event @event);
     }
-
-
 }

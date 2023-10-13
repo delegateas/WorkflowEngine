@@ -170,7 +170,14 @@ namespace WorkflowEngine.Core
             return new ValueTask();
 
         }
-            public ValueTask StartScope(IRunContext context, IWorkflow workflow, IAction action)
+
+        public ValueTask AddEvent(IRunContext run, IWorkflow workflow, IAction action, Event @event)
+        {
+            // Defaults to nothing to not create noise and breaks backwards compatibility
+            return new ValueTask();
+        }
+
+        public ValueTask StartScope(IRunContext context, IWorkflow workflow, IAction action)
         {
             JToken run = GetOrCreateRun(context);
              
@@ -197,10 +204,5 @@ namespace WorkflowEngine.Core
 
             return new ValueTask();
         }
-
-
-
     }
-
-
 }

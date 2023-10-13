@@ -1,7 +1,6 @@
 ﻿using Hangfire;
 using Hangfire.Server;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -89,57 +88,53 @@ namespace WorkflowEngine
             //TODO - avoid sending all workflow over hangfire, so we should lookup the manifest here if not set on workflow form its ID.
             workflow.Manifest ??= await workflowAccessor.GetWorkflowManifestAsync(workflow);
 
-
             runContextAccessor.RunContext = run;
             arrayContext.JobId = context.BackgroundJob.Id;
 
-
             try
             {
-
                 var result = await actionExecutor.ExecuteAsync(run, workflow, action);
-
-
-
-
+                
+                await outputRepository.AddEvent(run, workflow, action, new ActionCompletedEvent
+                {
+                    // TODO: Add path to action in state
+                    // assignees: thygesteffensen
+                    JobId = context.BackgroundJob.Id,
+                    ActionKey = action.Key
+                });
 
                 if (result != null)
                 {
-
                     var next = await executor.GetNextAction(run, workflow, result);
-
+                    
 
                     await hangfireActionExecutorResultHandler.InspectAsync(run, workflow, result, next);
 
                     if (next != null)
                     {
-                        var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                        // This is the hangfire ID thingy, this we would like to save
+                        var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
                                    (executor) => executor.ExecuteAsync(run, workflow, next, null));
+                        // result.
                     }
                     else if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
                     {
+                        var scopeAction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
 
-                        var scopeaction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
-
-
-                        var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                                 (executor) => executor.ExecuteAsync(run, workflow, scopeaction, null));
-
+                        var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                                 (executor) => executor.ExecuteAsync(run, workflow, scopeAction, null));
                         //await outputRepository.EndScope(run, workflow, action);
                     }
                     else if (result.Status == "Failed" && result.ReThrow)
                     {
-
+                        await outputRepository.AddEvent(run, workflow, action, new WorkflowFinishedEvent());
                         throw new InvalidOperationException("Action failed: " + result.FailedReason) { Data = { ["ActionResult"] = result } };
                     }
-
-
-
-
-
-
+                    else
+                    {
+                        await outputRepository.AddEvent(run, workflow, action, new WorkflowFinishedEvent());
+                    }
                 }
-
 
                 return result;
             }
@@ -148,9 +143,8 @@ namespace WorkflowEngine
                 context.SetJobParameter("RetryCount", 999);
                 throw;
             }
-
-
         }
+        
         /// <summary>
         /// Runs on the background process in hangfire
         /// </summary>
@@ -171,12 +165,11 @@ namespace WorkflowEngine
                 //TODO - avoid sending all workflow over hangfire, so we should wipe the workflow.manifest before scheduling and restore it after.
                 context.Workflow.Manifest = null;
 
-
                 var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
                             (executor) => executor.ExecuteAsync(context, context.Workflow, action, null));
             }
             return action;
         }
     }
-
 }
+
