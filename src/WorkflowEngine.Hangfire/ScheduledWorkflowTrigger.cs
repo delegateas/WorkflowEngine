@@ -1,4 +1,4 @@
-﻿using Hangfire;
+using Hangfire;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.Storage;
@@ -55,7 +55,7 @@ namespace WorkflowEngine
 
                 var job = _backgroundJobClient.Schedule<IHangfireWorkflowExecutor>((executor) => executor.TriggerAsync(
                     new TriggerContext { Workflow = workflow, Trigger = trigger ,
-                    }), time);
+                    },null), time);
 
                 _logger.LogInformation("Created scheduled workflow job {JobID}", job);
 

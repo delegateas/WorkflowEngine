@@ -1,4 +1,4 @@
-﻿using Hangfire;
+using Hangfire;
 using Hangfire.Server;
 using System;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace WorkflowEngine
             where TTriggerContext : TriggerContext
         {
             var job = backgroundJobClient.Enqueue<IHangfireWorkflowExecutor>(
-                        (executor) => executor.TriggerAsync(trigger));
+                        (executor) => executor.TriggerAsync(trigger,null));
 
             return job;
 
@@ -95,13 +95,7 @@ namespace WorkflowEngine
             {
                 var result = await actionExecutor.ExecuteAsync(run, workflow, action);
                 
-                await outputRepository.AddEvent(run, workflow, action, new ActionCompletedEvent
-                {
-                    // TODO: Add path to action in state
-                    // assignees: thygesteffensen
-                    JobId = context.BackgroundJob.Id,
-                    ActionKey = action.Key
-                });
+                await outputRepository.AddEvent(run, workflow, action, ActionCompletedEvent.FromAction(result,action,context.BackgroundJob.Id));
 
                 if (result != null)
                 {
@@ -127,12 +121,12 @@ namespace WorkflowEngine
                     }
                     else if (result.Status == "Failed" && result.ReThrow)
                     {
-                        await outputRepository.AddEvent(run, workflow, action, new WorkflowFinishedEvent());
+                        await outputRepository.AddEvent(run, workflow, action, WorkflowEvent.CreateFinishedEvent(context.BackgroundJob.Id,result));
                         throw new InvalidOperationException("Action failed: " + result.FailedReason) { Data = { ["ActionResult"] = result } };
                     }
                     else
                     {
-                        await outputRepository.AddEvent(run, workflow, action, new WorkflowFinishedEvent());
+                        await outputRepository.AddEvent(run, workflow, action, WorkflowEvent.CreateFinishedEvent(context.BackgroundJob.Id, result));
                     }
                 }
 
@@ -148,25 +142,26 @@ namespace WorkflowEngine
         /// <summary>
         /// Runs on the background process in hangfire
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="triggerContext"></param>
         /// <returns></returns>
-        public async ValueTask<object> TriggerAsync(ITriggerContext context)
+        public async ValueTask<object> TriggerAsync(ITriggerContext triggerContext, PerformContext context)
         {
             //TODO - avoid sending all workflow over hangfire,
-            context.Workflow.Manifest ??= await workflowAccessor.GetWorkflowManifestAsync(context.Workflow);
+            triggerContext.Workflow.Manifest ??= await workflowAccessor.GetWorkflowManifestAsync(triggerContext.Workflow);
 
-            context.RunId = context.RunId == Guid.Empty ? Guid.NewGuid() : context.RunId;
-
-            runContextAccessor.RunContext = context;
-            var action = await executor.Trigger(context);
+            triggerContext.RunId = triggerContext.RunId == Guid.Empty ? Guid.NewGuid() : triggerContext.RunId;
+            triggerContext.JobId = context.BackgroundJob.Id;
+          
+            runContextAccessor.RunContext = triggerContext;
+            var action = await executor.Trigger(triggerContext);
 
             if (action != null)
             {
                 //TODO - avoid sending all workflow over hangfire, so we should wipe the workflow.manifest before scheduling and restore it after.
-                context.Workflow.Manifest = null;
+                triggerContext.Workflow.Manifest = null;
 
                 var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                            (executor) => executor.ExecuteAsync(context, context.Workflow, action, null));
+                            (executor) => executor.ExecuteAsync(triggerContext, triggerContext.Workflow, action, null));
             }
             return action;
         }
