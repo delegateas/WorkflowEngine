@@ -1,8 +1,15 @@
+using Newtonsoft.Json.Linq;
+using System.Runtime.Serialization;
+
 namespace WorkflowEngine.Core
 {
     public enum EventType
     {
-        WorkflowFinished = 0,
-        ActionCompleted = 1
+        [EnumMember(Value = "workflow_started")]
+        WorkflowStarted = 0,
+        [EnumMember(Value = "workflow_finished")]
+        WorkflowFinished = 1,
+        [EnumMember(Value = "action_completed")]
+        ActionCompleted = 2
     }
 }
