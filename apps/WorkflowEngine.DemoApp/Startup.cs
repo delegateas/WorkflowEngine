@@ -303,7 +303,7 @@ namespace WorkflowEngine.DemoApp
                          (executor) => executor.TriggerAsync(new TriggerContext { 
                              Workflow = workflows.First(),
                              Trigger = new Trigger { ScheduledTime = DateTimeOffset.UtcNow, Key = workflows.First().Manifest.Triggers.First().Key,
-                                 Type =workflows.First().Manifest.Triggers.First().Value.Type },  RunId = Guid.NewGuid() }));
+                                 Type =workflows.First().Manifest.Triggers.First().Value.Type },  RunId = Guid.NewGuid() },null));
 
                     await c.Response.WriteAsync("Background JOb:" + a);
 
@@ -333,7 +333,7 @@ namespace WorkflowEngine.DemoApp
                                  Key = workflows.First(w => w.Id.ToString() == c.GetRouteValue("id") as string).Manifest.Triggers.FirstOrDefault().Key
                              },
                              Workflow = workflows.First(w=>w.Id.ToString() == c.GetRouteValue("id") as string)
-                         }));
+                         },null));
 
                     await c.Response.WriteAsync("Background JOb:" + a);
 
