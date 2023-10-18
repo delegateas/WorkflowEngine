@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace WorkflowEngine.Core
 {
@@ -7,6 +7,7 @@ namespace WorkflowEngine.Core
         IWorkflow Workflow { get; }
         ITrigger Trigger { get; set; }
        
+        string JobId { get; set; }
        
     }
 

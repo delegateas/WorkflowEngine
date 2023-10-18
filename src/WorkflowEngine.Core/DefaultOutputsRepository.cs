@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Concurrent;
@@ -64,7 +64,7 @@ namespace WorkflowEngine.Core
             return Runs.GetOrAdd(context.RunId, (id) => new JObject(new JProperty("actions", new JObject()), new JProperty("triggers", new JObject())));
         }
 
-        public ValueTask AddAsync(IRunContext context, IWorkflow workflow, ITrigger trigger)
+        public ValueTask AddTrigger(ITriggerContext context, IWorkflow workflow, ITrigger trigger)
         {
             JToken run = GetOrCreateRun(context);
 
@@ -170,7 +170,14 @@ namespace WorkflowEngine.Core
             return new ValueTask();
 
         }
-            public ValueTask StartScope(IRunContext context, IWorkflow workflow, IAction action)
+
+        public ValueTask AddEvent(IRunContext run, IWorkflow workflow, IAction action, Event @event)
+        {
+            // Defaults to nothing to not create noise and breaks backwards compatibility
+            return new ValueTask();
+        }
+
+        public ValueTask StartScope(IRunContext context, IWorkflow workflow, IAction action)
         {
             JToken run = GetOrCreateRun(context);
              
@@ -197,10 +204,5 @@ namespace WorkflowEngine.Core
 
             return new ValueTask();
         }
-
-
-
     }
-
-
 }

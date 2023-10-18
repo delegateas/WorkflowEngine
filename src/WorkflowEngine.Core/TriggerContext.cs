@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,7 +32,7 @@ namespace WorkflowEngine.Core
         public string PrincipalId { get; set; }
 
         public Guid RunId { get; set; }
-        
+        public string JobId { get; set; }
 
         public string ToString(string format, IFormatProvider formatProvider)
         {

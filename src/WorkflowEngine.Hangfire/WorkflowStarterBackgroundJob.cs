@@ -1,4 +1,4 @@
-﻿using Hangfire;
+using Hangfire;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
@@ -50,7 +50,7 @@ namespace Microsoft.Extensions.DependencyInjection
                                     Type = trigger.Value.Type,
                                     Key = trigger.Key
                                 },
-                            }), trigger.Value.Inputs["cronExpression"] as string);
+                            },null), trigger.Value.Inputs["cronExpression"] as string);
 
                         if (first && trigger.Value.Inputs.ContainsKey("runAtStartup") && (bool)trigger.Value.Inputs["runAtStartup"])
                             jobs.Trigger(workflow.Id.ToString());

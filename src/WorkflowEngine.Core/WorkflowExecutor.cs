@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,8 +49,8 @@ namespace WorkflowEngine.Core
 
         public async ValueTask<IAction> Trigger(ITriggerContext context)
         {
-
-            await outputsRepository.AddAsync(context,context.Workflow, context.Trigger);
+            
+            await outputsRepository.AddTrigger(context,context.Workflow, context.Trigger);
            
             var action = context.Workflow.Manifest.Actions.SingleOrDefault(c => c.Value.RunAfter?.Count == 0);
 
