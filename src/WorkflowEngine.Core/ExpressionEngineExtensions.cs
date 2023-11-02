@@ -29,6 +29,9 @@ namespace WorkflowEngine.Core
         {
 
             var resolvedInputs = new Dictionary<string, object>();
+            if (inputs == null)
+                return resolvedInputs;
+
 
             foreach (var input in inputs)
             {
@@ -48,16 +51,16 @@ namespace WorkflowEngine.Core
                     }
 
                 }
-                 
+
             }
 
             return resolvedInputs;
 
         }
-        public static  ValueTask<IDictionary<string,object>> ResolveInputs(this IExpressionEngine engine, ActionMetadata actionMetadata, ILogger logger)
+        public static ValueTask<IDictionary<string, object>> ResolveInputs(this IExpressionEngine engine, ActionMetadata actionMetadata, ILogger logger)
         {
             return engine.ResolveInputs(actionMetadata.Inputs, logger);
-             
+
         }
     }
 }

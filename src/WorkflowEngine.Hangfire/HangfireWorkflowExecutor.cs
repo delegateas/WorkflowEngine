@@ -111,7 +111,7 @@ namespace WorkflowEngine
                                    (executor) => executor.ExecuteAsync(run, workflow, next, null));
                         // result.
                     }
-                    else if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
+                    else if (workflow.Manifest.Actions.FindParentAction(action.Key) is IScopedActionMetadata scope)
                     {
                         var scopeAction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
 
