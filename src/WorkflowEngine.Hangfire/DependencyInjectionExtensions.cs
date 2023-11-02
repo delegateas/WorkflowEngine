@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddFunctions();
             services.AddScoped<IOutputsRepository, TOutputsRepository>();
-            services.AddSingleton<IWorkflowRepository, DefaultWorkflowRepository>();
+            services.AddTransient<IWorkflowRepository, DefaultWorkflowRepository>();
 
             services.AddHostedService<WorkflowStarterBackgroundJob>();
 

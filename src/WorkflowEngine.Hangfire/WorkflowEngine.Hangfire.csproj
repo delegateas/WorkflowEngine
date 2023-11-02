@@ -21,11 +21,8 @@
 	<ItemGroup Condition="'$(TargetFramework)'=='net6.0'">
 		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
 	</ItemGroup>
-
-	
-	 
-    <ItemGroup>
-        <ProjectReference Include="..\WorkflowEngine.Core\WorkflowEngine.Core.csproj" />
-    </ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\WorkflowEngine.Core\WorkflowEngine.Core.csproj" />
+	</ItemGroup>
 
 </Project>

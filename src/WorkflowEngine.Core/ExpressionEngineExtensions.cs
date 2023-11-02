@@ -28,7 +28,7 @@ namespace WorkflowEngine.Core
         {
 
             var resolvedInputs = new Dictionary<string, object>();
-
+            if(actionMetadata.Inputs!=null)
             foreach (var input in actionMetadata.Inputs)
             {
                 if (input.Value is string str && str.Contains("@"))
