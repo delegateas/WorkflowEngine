@@ -47,11 +47,7 @@ namespace WorkflowEngine
                     Type = workflow.Manifest.Triggers.FirstOrDefault().Value.Type,
                     Key = workflow.Manifest.Triggers.FirstOrDefault().Key
                 };
-                
                  
-
-                //TODO - avoid sending all workflow over hangfire,
-                workflow.Manifest = null;
 
                 var job = _backgroundJobClient.Schedule<IHangfireWorkflowExecutor>((executor) => executor.TriggerAsync(
                     new TriggerContext { Workflow = workflow, Trigger = trigger ,

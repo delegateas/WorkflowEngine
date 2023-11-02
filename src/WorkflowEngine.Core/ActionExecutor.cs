@@ -16,6 +16,10 @@ namespace WorkflowEngine.Core
     {
         public string Scope { get; set; }
     }
+    public interface IWaitAction
+    {
+
+    }
     public class ActionExecutor : IActionExecutor
     {
         private readonly IOutputsRepository _outputsRepository;
@@ -47,6 +51,7 @@ namespace WorkflowEngine.Core
         }
         public async ValueTask<IActionResult> ExecuteAsync(IRunContext context, IWorkflow workflow, IAction action)
         {
+             
             try
             {
 
@@ -56,6 +61,10 @@ namespace WorkflowEngine.Core
                 }
 
                 var actionMetadata = workflow.Manifest.Actions.FindAction(action.Key);
+                if (actionMetadata == null)
+                {
+                    throw new InvalidOperationException($"The action '{action.Key}' was not found. Found keys are: '{string.Join(",",workflow.Manifest.Actions.Keys)}'");
+                }
                 _scopeContext.Scope = action.Key;
                 action.Inputs = await _expressionEngine.ResolveInputs(actionMetadata, _logger);
 
@@ -78,17 +87,16 @@ namespace WorkflowEngine.Core
                 var actionImplementation = _serviceProvider.GetRequiredService(_implementations[actionMetadata.Type].Implementation) as IActionImplementation;
 
 
-
+                var actionResult = await actionImplementation.ExecuteAsync(context, workflow, action);
 
                 var result = new ActionResult
                 {
                     Key = action.Key,
                     Status = "Succeded",
-                    Result = await actionImplementation.ExecuteAsync(context, workflow, action)
+                    Result = actionResult,
+                    DelayNextAction = (actionImplementation is IWaitAction) ? (TimeSpan)actionResult: null
                 };
-
-
-
+                 
                 await _outputsRepository.AddAsync(context, workflow, action, result);
 
 

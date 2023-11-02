@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace WorkflowEngine.Core
@@ -12,6 +12,7 @@ namespace WorkflowEngine.Core
 
         public int Index { get; set; }
         public bool ScopeMoveNext { get; set; }
+       
     }
 
 
