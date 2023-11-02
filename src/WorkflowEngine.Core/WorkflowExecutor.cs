@@ -28,12 +28,9 @@ namespace WorkflowEngine.Core
         public ValueTask<IAction> GetNextAction(IRunContext context, IWorkflow workflow, IAction action, IActionResult priorResult)
         {
             logger.LogInformation("Finding Next Action for {WorkflowId} and prior {@result} ", workflow.Id, priorResult);
-            //var action = workflow.Manifest.Actions.Single(c => c.Key == priorResult.Key);
-
-            
+             
             var next = workflow.Manifest.Actions.FindNextAction(priorResult.Key);
-            //var parent = workflow.Manifest.Actions.FindParentAction(priorResult.Key) is ForLoopActionMetadata;
-
+             
             if (next.IsDefault())
                 return new ValueTask<IAction>();
 

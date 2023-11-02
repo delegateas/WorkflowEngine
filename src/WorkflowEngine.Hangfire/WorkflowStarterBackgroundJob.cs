@@ -32,28 +32,31 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 foreach (var workflow in await workflows.GetAllWorkflows())
                 {
-                    var trigger = workflow.Manifest.Triggers.FirstOrDefault(t => t.Value.Type == "TimerTrigger");
 
-                    if (!trigger.Equals(default(KeyValuePair<string, TriggerMetadata>)))
+                    foreach (var trigger in workflow.Manifest.Triggers.Where(t => t.Value.Type == "TimerTrigger"))
                     {
-                         
-                        
 
-                        jobs.AddOrUpdate<IHangfireWorkflowExecutor>(workflow.Id.ToString(),
-                            (executor) => executor.TriggerAsync(new TriggerContext
-                            {
-                                Workflow = workflow,
-                                Trigger = new Trigger
+                        if (!trigger.Equals(default(KeyValuePair<string, TriggerMetadata>)))
+                        {
+
+                            workflow.Manifest = null;
+
+                            jobs.AddOrUpdate(workflow.Id.ToString() + trigger.Key,
+                                (System.Linq.Expressions.Expression<Action<IHangfireWorkflowExecutor>>)((executor) => executor.TriggerAsync(new TriggerContext
                                 {
-                                    Inputs = trigger.Value.Inputs,
-                                    ScheduledTime = DateTimeOffset.UtcNow,
-                                    Type = trigger.Value.Type,
-                                    Key = trigger.Key
-                                },
-                            },null), trigger.Value.Inputs["cronExpression"] as string);
+                                    Workflow = workflow,
+                                    Trigger = new Trigger
+                                    {
+                                        Inputs = trigger.Value.Inputs,
+                                        ScheduledTime = DateTimeOffset.UtcNow,
+                                        Type = trigger.Value.Type,
+                                        Key = trigger.Key
+                                    },
+                                }, null)), trigger.Value.Inputs["cronExpression"] as string,GetTimeZone(trigger) );
 
-                        if (first && trigger.Value.Inputs.ContainsKey("runAtStartup") && (bool)trigger.Value.Inputs["runAtStartup"])
-                            jobs.Trigger(workflow.Id.ToString());
+                            if (first && trigger.Value.Inputs.ContainsKey("runAtStartup") && (bool)trigger.Value.Inputs["runAtStartup"])
+                                jobs.Trigger(workflow.Id.ToString());
+                        }
                     }
                 }
 
@@ -66,7 +69,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
             }
 
-
+            static TimeZoneInfo GetTimeZone(KeyValuePair<string, TriggerMetadata> trigger)
+            {
+               
+                if (trigger.Value.Inputs.ContainsKey("timezone") && trigger.Value.Inputs["timezone"] is string zone && !string.IsNullOrWhiteSpace(zone))
+                    return TimeZoneInfo.FindSystemTimeZoneById(zone) ?? TimeZoneInfo.Utc;
+                return TimeZoneInfo.Utc;
+               
+            }
         }
     }
 }

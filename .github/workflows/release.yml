@@ -33,7 +33,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
-
+      
+      - name: Setup Git for Windows' minimal SDK
+        uses: git-for-windows/setup-git-for-windows-sdk@v1
+      
+      - name: Print GIT verison
+        run:  git --version  
+      
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'   
@@ -62,7 +68,7 @@ jobs:
 
       - name: Print release verison
         run: echo ${env:RELEASE_VERSION}
-
+       
       - name: Cleaning
         run: dotnet clean
 
