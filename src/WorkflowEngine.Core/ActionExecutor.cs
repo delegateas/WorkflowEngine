@@ -94,7 +94,7 @@ namespace WorkflowEngine.Core
                     Key = action.Key,
                     Status = "Succeded",
                     Result = actionResult,
-                    DelayNextAction = (actionImplementation is IWaitAction) ? (TimeSpan)actionResult: null
+                    DelayNextAction = (actionImplementation is IWaitAction) ? (TimeSpan?)actionResult: null
                 };
                  
                 await _outputsRepository.AddAsync(context, workflow, action, result);
