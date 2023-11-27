@@ -32,6 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddTransient<IWorkflowAccessor, DefaultWorkflowAccessor>();
             services.AddTransient<IHangfireActionExecutorResultInspector, DefaultHangfireActionExecutorResultInspector>();
+            services.AddTransient<HangfireWorkflowManifestJobFilter>();
 
             return services;
         }
