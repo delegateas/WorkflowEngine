@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
                             workflow.Manifest = null;
 
                             jobs.AddOrUpdate(workflow.Id.ToString() + trigger.Key,
-                                (System.Linq.Expressions.Expression<Action<IHangfireWorkflowExecutor>>)((executor) => executor.TriggerAsync(new TriggerContext
+                                (System.Linq.Expressions.Expression<System.Action<IHangfireWorkflowExecutor>>)((executor) => executor.TriggerAsync(new TriggerContext
                                 {
                                     Workflow = workflow,
                                     Trigger = new Trigger
@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.DependencyInjection
                                 }, null)), trigger.Value.Inputs["cronExpression"] as string,GetTimeZone(trigger) );
 
                             if (first && trigger.Value.Inputs.ContainsKey("runAtStartup") && (bool)trigger.Value.Inputs["runAtStartup"])
-                                jobs.Trigger(workflow.Id.ToString());
+                                jobs.Trigger(workflow.Id.ToString() + trigger.Key);
                         }
                     }
                 }
