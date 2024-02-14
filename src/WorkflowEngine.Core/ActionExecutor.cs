@@ -67,35 +67,12 @@ namespace WorkflowEngine.Core
                 }
                 _scopeContext.Scope = action.Key;
                 action.Inputs = await _expressionEngine.ResolveInputs(actionMetadata, _logger);
-
-                {
-                    //if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata parent)
-                    //{
-                    //    await outputsRepository.AddArrayInput(context, workflow, action);
-                    //}
-                    //else
-                    //if (actionMetadata is ForLoopActionMetadata)
-                    //{
-                    //    await outputsRepository.StartScope(context, workflow, action);
-                    //}
-                    //else
-                    {
-                        await _outputsRepository.AddInput(context, workflow, action);
-                    }
-                }
-
-                var actionImplementation = _serviceProvider.GetRequiredService(_implementations[actionMetadata.Type].Implementation) as IActionImplementation;
-
-
-                var actionResult = await actionImplementation.ExecuteAsync(context, workflow, action);
-
-                var result = new ActionResult
-                {
-                    Key = action.Key,
-                    Status = "Succeded",
-                    Result = actionResult,
-                    DelayNextAction = (actionImplementation is IWaitAction) ? (TimeSpan)actionResult: null
-                };
+                  
+                await _outputsRepository.AddInput(context, workflow, action);
+                 
+                var metadata = _implementations[actionMetadata.Type];
+                var result = await metadata.ExecuteAsync(_serviceProvider, context, workflow, action);
+                 
                  
                 await _outputsRepository.AddAsync(context, workflow, action, result);
 

@@ -5,6 +5,10 @@ namespace WorkflowEngine.Core
 {
     public class ForLoopActionMetadata : ActionMetadata, IScopedActionMetadata
     {
+        public ForLoopActionMetadata()
+        {
+            Type = "Foreach";
+        }
         public object ForEach { get; set; }
         public int ConcurrentCount { get; set; } = 1;
 

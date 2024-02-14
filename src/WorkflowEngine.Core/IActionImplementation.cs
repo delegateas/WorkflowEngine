@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core
 {
@@ -10,7 +10,14 @@ namespace WorkflowEngine.Core
 
 
     }
-    
+    public interface IActionImplementation<TInput>
+    {
+
+
+        ValueTask<object> ExecuteAsync(IRunContext context, IWorkflow workflow, IAction<TInput> action);
+
+
+    }
 
 
 }

@@ -54,7 +54,7 @@ namespace WorkflowEngine.Core.Actions
                             if (nextactionmetadata.Equals(default(KeyValuePair<string, ActionMetadata>)))
                                 throw new Exception("No action with no runafter could be found");
 
-                            var nextaction = context.CopyTo(new Action { Type = nextactionmetadata.Value.Type, Key = $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index = action.Index });
+                            var nextaction = context.CopyTo(new Action { Type = nextactionmetadata.Value.Type, Key = $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index = action.Index+1 });
                             
                             var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(arrayContext.JobId,
                                     (executor) => executor.ExecuteAsync(context, workflow, nextaction, null));
@@ -70,7 +70,7 @@ namespace WorkflowEngine.Core.Actions
                         if (nextactionmetadata.Equals(default(KeyValuePair<string, ActionMetadata>)))
                             throw new Exception("No action with no runafter could be found");
 
-                        var nextaction = context.CopyTo(new Action { Type = nextactionmetadata.Value.Type, Key = $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index = action.Index });
+                        var nextaction = context.CopyTo(new Action { Type = nextactionmetadata.Value.Type, Key = $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index = action.Index+1 });
 
                        
                         var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(arrayContext.JobId,
