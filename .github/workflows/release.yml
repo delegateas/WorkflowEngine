@@ -11,18 +11,22 @@ jobs:
     runs-on: windows-latest
     name: Testing
     strategy:
-      matrix:
-        dotnet: [ 'net6.0' ]
+      matrix: 
+        include: 
+          - framework: "net6.0"
+            version: 6.0.x
+          - framework: net8.0
+            version: 8.0.x
     steps:
       - name: Checkout code base
         uses: actions/checkout@v2
 
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.x'   
+          dotnet-version: ${{ matrix.version }}
 
       - name: Run tests
-        run: dotnet test --verbosity normal -f ${{ matrix.dotnet }}
+        run: dotnet test --verbosity normal -f ${{ matrix.framework }}
 
 
   release:
@@ -42,7 +46,7 @@ jobs:
       
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.x'   
+          dotnet-version: '8.0.x'   
           
       - name: Setup Node.js
         uses: actions/setup-node@v1

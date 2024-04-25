@@ -13,31 +13,40 @@ jobs:
     name: Testing
     strategy:
       matrix:
-        dotnet: [ 'net6.0' ]
+        include: 
+          - framework: "net6.0"
+            version: 6.0.x
+          - framework: net8.0
+            version: 8.0.x
+      
     steps:
       - name: Checkout code base
         uses: actions/checkout@v2
  
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: ${{ matrix.version }}
       
       - name: Run tests
-        run: dotnet test --verbosity normal -f ${{ matrix.dotnet }}
+        run: dotnet test --verbosity normal -f ${{ matrix.framework }}
 
   build:
     runs-on: windows-latest
     name: Building
     strategy:
       matrix: 
-        dotnet: ['net6.0']
+        include: 
+          - framework: "net6.0"
+            version: 6.0.x
+          - framework: net8.0
+            version: 8.0.x
     steps:
       - name: Checkout code base
         uses: actions/checkout@v2
 
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: ${{ matrix.version }}
 
       - name: Cleaning
         run: dotnet clean
@@ -46,12 +55,12 @@ jobs:
         run: dotnet restore WorkflowEngine.sln
 
       - name: Build solution
-        run: dotnet build -o ../build/${{ matrix.dotnet }} -c Release --no-restore -m:1 -f ${{ matrix.dotnet }}
+        run: dotnet build -o ../build/${{ matrix.dotnet }} -c Release --no-restore -m:1 -f  ${{ matrix.framework }}
 
       - name: Archive build to artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build
           path: |
-            build/${{ matrix.dotnet }}/*
+            build/${{ matrix.framework }}/*
           retention-days: 5
