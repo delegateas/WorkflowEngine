@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace WorkflowEngine.Core
 {
@@ -14,5 +14,9 @@ namespace WorkflowEngine.Core
 
     }
 
+    public interface IWorkflowInputs<TInput> where TInput : class
+    {
+
+    }
 
 }

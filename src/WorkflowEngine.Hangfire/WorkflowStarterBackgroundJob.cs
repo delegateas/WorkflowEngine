@@ -44,6 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
                             jobs.AddOrUpdate(workflow.Id.ToString() + trigger.Key,
                                 (System.Linq.Expressions.Expression<System.Action<IHangfireWorkflowExecutor>>)((executor) => executor.TriggerAsync(new TriggerContext
                                 {
+                                    PrincipalId = "1b714972-8d0a-4feb-b166-08d93c6ae328",
                                     Workflow = workflow,
                                     Trigger = new Trigger
                                     {

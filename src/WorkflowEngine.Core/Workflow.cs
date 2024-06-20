@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 namespace WorkflowEngine.Core
@@ -23,6 +23,11 @@ namespace WorkflowEngine.Core
 
             return string.Empty;
         }
+    }
+    public class Workflow<TInput> : Workflow, IWorkflowInputs<TInput>
+   where TInput : class
+    {
+
     }
 
 

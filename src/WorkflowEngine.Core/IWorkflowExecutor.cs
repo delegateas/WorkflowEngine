@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core
@@ -16,6 +17,8 @@ namespace WorkflowEngine.Core
             other.PrincipalId = PrincipalId;
             return other;
         }
+
+       
     }
     public interface IWorkflowExecutor
     {
