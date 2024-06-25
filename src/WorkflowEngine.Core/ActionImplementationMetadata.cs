@@ -5,12 +5,34 @@ using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core
 {
-    public class ActionImplementationMetadata<T> : IActionImplementationMetadata
-        where T: IActionImplementation
+    public class ActionImplementationMetadata 
     {
         public string Type { get; set; }
-        public Type Implementation => typeof(T);
+        public Type Implementation { get; protected set; }
 
+        public static IActionImplementationMetadata FromType(Type type, string name)
+        {
+            var metadata = Activator.CreateInstance(typeof(ActionImplementationMetadata<>).MakeGenericType(type)) as ActionImplementationMetadata;
+            metadata.Type = name ?? type.Name;
+
+            return metadata as IActionImplementationMetadata;
+        }
+        public static IActionImplementationMetadata FromType(Type type,Type inputType, string name)
+        {
+            var metadata = Activator.CreateInstance(typeof(ActionImplementationMetadata<,>).MakeGenericType(type,inputType)) as ActionImplementationMetadata;
+            metadata.Type = name ?? type.Name;
+
+            return metadata as IActionImplementationMetadata;
+        }
+    }
+    public class ActionImplementationMetadata<T> : ActionImplementationMetadata,IActionImplementationMetadata
+        where T: IActionImplementation
+    {
+        public ActionImplementationMetadata()
+        {
+            Implementation = typeof(T); 
+        }
+       
         public async ValueTask<ActionResult> ExecuteAsync(IServiceProvider services, IRunContext context, IWorkflow workflow, IAction action)
         {
             var implementation = services.GetRequiredService(Implementation) as IActionImplementation;
@@ -28,11 +50,14 @@ namespace WorkflowEngine.Core
         }
     }
 
-    public class ActionImplementationMetadata<T,TInput> : IActionImplementationMetadata
+    public class ActionImplementationMetadata<T,TInput> : ActionImplementationMetadata, IActionImplementationMetadata
         where T : IActionImplementation<TInput>
     {
-        public string Type { get; set; }
-        public Type Implementation => typeof(T);
+        public ActionImplementationMetadata()
+        {
+            Implementation = typeof(T);
+        }
+
 
         public async ValueTask<ActionResult> ExecuteAsync(IServiceProvider services, IRunContext context,IWorkflow workflow,IAction action )
         {

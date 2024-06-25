@@ -2,7 +2,11 @@ using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core
 {
-    public interface IActionImplementation
+    public interface IActionForRegistration
+    {
+        
+    }
+    public interface IActionImplementation : IActionForRegistration
     {
          
        
@@ -10,7 +14,7 @@ namespace WorkflowEngine.Core
 
 
     }
-    public interface IActionImplementation<TInput>
+    public interface IActionImplementation<TInput>  : IActionForRegistration
     {
 
 
