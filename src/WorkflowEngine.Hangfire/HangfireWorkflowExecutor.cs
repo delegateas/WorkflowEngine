@@ -1,7 +1,6 @@
-﻿using Hangfire;
+using Hangfire;
 using Hangfire.Server;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,7 +36,7 @@ namespace WorkflowEngine
             where TTriggerContext : TriggerContext
         {
             var job = backgroundJobClient.Enqueue<IHangfireWorkflowExecutor>(
-                        (executor) => executor.TriggerAsync(trigger));
+                        (executor) => executor.TriggerAsync(trigger, null));
 
             return job;
 
@@ -86,60 +85,76 @@ namespace WorkflowEngine
 
         public async ValueTask<object> ExecuteAsync(IRunContext run, IWorkflow workflow, IAction action, PerformContext context)
         {
-            //TODO - avoid sending all workflow over hangfire, so we should lookup the manifest here if not set on workflow form its ID.
-            workflow.Manifest ??= await workflowAccessor.GetWorkflowManifestAsync(workflow);
-
-
-            runContextAccessor.RunContext = run;
-            arrayContext.JobId = context.BackgroundJob.Id;
-
-
             try
-            {
+            { 
+                runContextAccessor.RunContext = run;
+                arrayContext.JobId = context.BackgroundJob.Id;
+
 
                 var result = await actionExecutor.ExecuteAsync(run, workflow, action);
 
 
-
-
+                await outputRepository.AddEvent(run, workflow, action, ActionCompletedEvent.FromAction(result, action, context.BackgroundJob.Id));
 
                 if (result != null)
                 {
-
-                    var next = await executor.GetNextAction(run, workflow, result);
-
+                    var next = await executor.GetNextAction(run, workflow, action, result);
+                   
 
                     await hangfireActionExecutorResultHandler.InspectAsync(run, workflow, result, next);
 
                     if (next != null)
                     {
-                        var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                                   (executor) => executor.ExecuteAsync(run, workflow, next, null));
+                      
+                        if (result.DelayNextAction.HasValue)
+                        {
+                            
+                            var workflowRunId = backgroundJobClient.Schedule<IHangfireActionExecutor>(
+                                     (executor) => executor.ExecuteAsync(run, workflow, next, null),result.DelayNextAction.Value);
+                        }
+                        else
+                        {
+                            var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                                       (executor) => executor.ExecuteAsync(run, workflow, next, null));
+                        }
+
+
+                         
                     }
-                    else if (workflow.Manifest.Actions.FindParentAction(action.Key) is ForLoopActionMetadata scope)
+                    else if (workflow.Manifest.Actions.FindParentAction(action.Key) is IScopedActionMetadata scope)
                     {
+                        var scopeAction = run.CopyTo(new Action { 
+                            Index = action.Index,
+                            ScopeMoveNext = true,
+                            Type = scope.Type,
+                            Key = action.Key.Substring(0, action.Key.LastIndexOf('.')),
+                            ScheduledTime = DateTimeOffset.UtcNow +(result.DelayNextAction ?? TimeSpan.Zero) });
 
-                        var scopeaction = run.CopyTo(new Action { ScopeMoveNext = true, Type = scope.Type, Key = action.Key.Substring(0, action.Key.LastIndexOf('.')), ScheduledTime = DateTimeOffset.UtcNow });
+                        if (result.DelayNextAction != null)
+                        {
+
+                            var workflowRunId = backgroundJobClient.Schedule<IHangfireActionExecutor>(
+                                     (executor) => executor.ExecuteAsync(run, workflow, scopeAction, null),result.DelayNextAction.Value);
+                        }
+                        else
+                        {
 
 
-                        var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                                 (executor) => executor.ExecuteAsync(run, workflow, scopeaction, null));
-
+                            var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                                     (executor) => executor.ExecuteAsync(run, workflow, scopeAction, null));
+                        }
                         //await outputRepository.EndScope(run, workflow, action);
                     }
                     else if (result.Status == "Failed" && result.ReThrow)
                     {
-
+                        await outputRepository.AddEvent(run, workflow, action, WorkflowEvent.CreateFinishedEvent(context.BackgroundJob.Id, result));
                         throw new InvalidOperationException("Action failed: " + result.FailedReason) { Data = { ["ActionResult"] = result } };
                     }
-
-
-
-
-
-
+                    else
+                    {
+                        await outputRepository.AddEvent(run, workflow, action, WorkflowEvent.CreateFinishedEvent(context.BackgroundJob.Id, result));
+                    }
                 }
-
 
                 return result;
             }
@@ -148,35 +163,35 @@ namespace WorkflowEngine
                 context.SetJobParameter("RetryCount", 999);
                 throw;
             }
+        }
 
+        public async ValueTask<object> TriggerAsync(ITriggerContext triggerContext)
+        {
+            return await TriggerAsync(triggerContext, null);
 
         }
+
         /// <summary>
         /// Runs on the background process in hangfire
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="triggerContext"></param>
         /// <returns></returns>
-        public async ValueTask<object> TriggerAsync(ITriggerContext context)
-        {
-            //TODO - avoid sending all workflow over hangfire,
-            context.Workflow.Manifest ??= await workflowAccessor.GetWorkflowManifestAsync(context.Workflow);
+        public async ValueTask<object> TriggerAsync(ITriggerContext triggerContext, PerformContext context = null)
+        { 
+            
+            triggerContext.RunId = triggerContext.RunId == Guid.Empty ? Guid.NewGuid() : triggerContext.RunId;
+            triggerContext.JobId = context?.BackgroundJob.Id;
 
-            context.RunId = context.RunId == Guid.Empty ? Guid.NewGuid() : context.RunId;
-
-            runContextAccessor.RunContext = context;
-            var action = await executor.Trigger(context);
+            runContextAccessor.RunContext = triggerContext;
+            var action = await executor.Trigger(triggerContext);
 
             if (action != null)
-            {
-                //TODO - avoid sending all workflow over hangfire, so we should wipe the workflow.manifest before scheduling and restore it after.
-                context.Workflow.Manifest = null;
-
-
+            {   
                 var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
-                            (executor) => executor.ExecuteAsync(context, context.Workflow, action, null));
+                            (executor) => executor.ExecuteAsync(triggerContext, triggerContext.Workflow, action, null));
             }
             return action;
         }
     }
-
 }
+

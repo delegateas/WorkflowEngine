@@ -1,4 +1,6 @@
-﻿namespace WorkflowEngine.Core
+using System;
+
+namespace WorkflowEngine.Core
 {
     //Har info om hvad der skal schedules next i hangfire
     public interface IActionResult
@@ -7,7 +9,9 @@
         string Status { get; }
         object Result { get;  }
         string FailedReason { get; }
-        public bool ReThrow { get;  }
+        bool ReThrow { get;  }
+
+        TimeSpan? DelayNextAction { get; }
     }
     
 

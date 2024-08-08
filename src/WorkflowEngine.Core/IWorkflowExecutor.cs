@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace WorkflowEngine.Core
@@ -16,11 +17,13 @@ namespace WorkflowEngine.Core
             other.PrincipalId = PrincipalId;
             return other;
         }
+
+       
     }
     public interface IWorkflowExecutor
     {
         public ValueTask<IAction> Trigger(ITriggerContext context);
-        public ValueTask<IAction> GetNextAction(IRunContext context, IWorkflow workflow, IActionResult priorResult);
+        public ValueTask<IAction> GetNextAction(IRunContext context, IWorkflow workflow, IAction action, IActionResult priorResult);
 
     }
 

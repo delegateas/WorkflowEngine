@@ -1,7 +1,8 @@
-﻿using ExpressionEngine;
+using ExpressionEngine;
 using ExpressionEngine.Functions.Base;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,30 +25,42 @@ namespace WorkflowEngine.Core
            
             return services;
         }
-        public static async ValueTask<IDictionary<string,object>> ResolveInputs(this IExpressionEngine engine, ActionMetadata actionMetadata, ILogger logger)
+        public static async ValueTask<IDictionary<string, object>> ResolveInputs(this IExpressionEngine engine, IDictionary<string, object> inputs, ILogger logger)
         {
 
             var resolvedInputs = new Dictionary<string, object>();
+            if (inputs == null)
+                return resolvedInputs;
 
-            foreach (var input in actionMetadata.Inputs)
+
+            foreach (var input in inputs)
             {
                 if (input.Value is string str && str.Contains("@"))
                 {
-                    resolvedInputs[input.Key] = await engine.ParseToValueContainer(str);
+                    resolvedInputs[input.Key] = await engine.ParseToValueContainer(input.Value.ToString());
                 }
                 else
                 {
-                    resolvedInputs[input.Key] = input.Value;
-                }
-                //else
-                //{
+                    if (input.Value is IDictionary<string, object> obj)
+                    {
+                        resolvedInputs[input.Key] = await engine.ResolveInputs(obj, logger);
+                    }
+                    else
+                    {
+                        resolvedInputs[input.Key] = input.Value;
+                    }
 
-                //    logger.LogWarning("{Key}: {Type}", input, inputs[input].GetType());
-                //}
-                //  inputs[input] = inputs[input];
+                }
+
             }
 
             return resolvedInputs;
+
+        }
+        public static ValueTask<IDictionary<string, object>> ResolveInputs(this IExpressionEngine engine, ActionMetadata actionMetadata, ILogger logger)
+        {
+            return engine.ResolveInputs(actionMetadata.Inputs, logger);
+
         }
     }
 }

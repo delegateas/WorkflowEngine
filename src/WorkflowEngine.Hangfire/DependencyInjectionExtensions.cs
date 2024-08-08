@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Sprache;
 using WorkflowEngine;
 using WorkflowEngine.Core;
 using WorkflowEngine.Core.Actions;
@@ -25,12 +26,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddFunctions();
             services.AddScoped<IOutputsRepository, TOutputsRepository>();
-            services.AddSingleton<IWorkflowRepository, DefaultWorkflowRepository>();
+            services.AddTransient<IWorkflowRepository, DefaultWorkflowRepository>();
 
             services.AddHostedService<WorkflowStarterBackgroundJob>();
 
             services.AddTransient<IWorkflowAccessor, DefaultWorkflowAccessor>();
             services.AddTransient<IHangfireActionExecutorResultInspector, DefaultHangfireActionExecutorResultInspector>();
+            services.AddTransient<HangfireWorkflowManifestJobFilter>();
+
             return services;
         }
 
