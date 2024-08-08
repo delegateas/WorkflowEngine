@@ -1,4 +1,5 @@
 using Hangfire;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 var workflows = sp.GetRequiredService<IWorkflowRepository>();
                 var jobs = sp.GetRequiredService<IRecurringJobManager>();
+                var configuration = sp.GetRequiredService<IConfiguration>();
 
                 foreach (var workflow in await workflows.GetAllWorkflows())
                 {
@@ -36,24 +38,37 @@ namespace Microsoft.Extensions.DependencyInjection
                     foreach (var trigger in workflow.Manifest.Triggers.Where(t => t.Value.Type == "TimerTrigger"))
                     {
 
+
+
                         if (!trigger.Equals(default(KeyValuePair<string, TriggerMetadata>)))
                         {
+                            if(configuration.GetSection($"Workflows:{workflow.GetType().Name}")?.Value == "false" ||
+                                configuration.GetSection($"Workflows:{workflow.GetType().Name}:{trigger.Key}")?.Value == "false"
+                                )
+                            {
+                                jobs.RemoveIfExists(workflow.Id.ToString() + trigger.Key);
+                                continue;
+                            }
 
                             workflow.Manifest = null;
 
                             jobs.AddOrUpdate(workflow.Id.ToString() + trigger.Key,
-                                (System.Linq.Expressions.Expression<System.Action<IHangfireWorkflowExecutor>>)((executor) => executor.TriggerAsync(new TriggerContext
-                                {
-                                    PrincipalId = "1b714972-8d0a-4feb-b166-08d93c6ae328",
-                                    Workflow = workflow,
-                                    Trigger = new Trigger
-                                    {
-                                        Inputs = trigger.Value.Inputs,
-                                        ScheduledTime = DateTimeOffset.UtcNow,
-                                        Type = trigger.Value.Type,
-                                        Key = trigger.Key
-                                    },
-                                }, null)), trigger.Value.Inputs["cronExpression"] as string,GetTimeZone(trigger) );
+                                 (System.Linq.Expressions.Expression<System.Action<IHangfireWorkflowExecutor>>) ((executor) => executor.TriggerAsync(new TriggerContext
+                                 {
+                                     PrincipalId = "1b714972-8d0a-4feb-b166-08d93c6ae328",
+                                     Workflow = workflow,
+                                     Trigger = new Trigger
+                                     {
+                                         Inputs = trigger.Value.Inputs,
+                                         ScheduledTime = DateTimeOffset.UtcNow,
+                                         Type = trigger.Value.Type,
+                                         Key = trigger.Key
+                                     },
+                                 }, null)), trigger.Value.Inputs["cronExpression"] as string,new RecurringJobOptions
+                                 {
+                                      TimeZone = GetTimeZone(trigger)
+                                 });
+
 
                             if (first && trigger.Value.Inputs.ContainsKey("runAtStartup") && (bool)trigger.Value.Inputs["runAtStartup"])
                                 jobs.Trigger(workflow.Id.ToString() + trigger.Key);
