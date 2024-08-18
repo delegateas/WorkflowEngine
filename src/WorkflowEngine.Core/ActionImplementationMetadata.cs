@@ -10,6 +10,8 @@ namespace WorkflowEngine.Core
         public string Type { get; set; }
         public Type Implementation { get; protected set; }
 
+
+        
         public static IActionImplementationMetadata FromType(Type type, string name)
         {
             var metadata = Activator.CreateInstance(typeof(ActionImplementationMetadata<>).MakeGenericType(type)) as ActionImplementationMetadata;
@@ -39,14 +41,10 @@ namespace WorkflowEngine.Core
 
             var actionResult = await implementation.ExecuteAsync(context, workflow, action);
 
-            var result = new ActionResult
-            {
-                Key = action.Key,
-                Status = "Succeded",
-                Result = actionResult,
-                DelayNextAction = (implementation is IWaitAction) ? (TimeSpan) actionResult : null
-            };
-            return result;
+            return ActionResult.Success(action, actionResult,implementation);
+
+          
+                   
         }
     }
 
@@ -69,14 +67,8 @@ namespace WorkflowEngine.Core
 
             var actionResult= await implementation.ExecuteAsync(context, workflow, typedAction);
 
-            var result = new ActionResult
-            {
-                Key = action.Key,
-                Status = "Succeded",
-                Result = actionResult,
-                DelayNextAction = (implementation is IWaitAction) ? (TimeSpan) actionResult : null
-            };
-            return result;
+            return ActionResult.Success(action, actionResult, implementation);
+           
         }
     }
 

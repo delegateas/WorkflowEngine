@@ -86,10 +86,10 @@ namespace WorkflowEngine
         public async ValueTask<object> ExecuteAsync(IRunContext run, IWorkflow workflow, IAction action, PerformContext context)
         {
             try
-            { 
+            {
                 runContextAccessor.RunContext = run;
                 arrayContext.JobId = context.BackgroundJob.Id;
-
+                var queue = context.BackgroundJob.Job.Queue ?? "default";
 
                 var result = await actionExecutor.ExecuteAsync(run, workflow, action);
 
@@ -109,12 +109,12 @@ namespace WorkflowEngine
                         if (result.DelayNextAction.HasValue)
                         {
                             
-                            var workflowRunId = backgroundJobClient.Schedule<IHangfireActionExecutor>(
+                            var workflowRunId = backgroundJobClient.Schedule<IHangfireActionExecutor>(queue,
                                      (executor) => executor.ExecuteAsync(run, workflow, next, null),result.DelayNextAction.Value);
                         }
                         else
                         {
-                            var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                            var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(queue,
                                        (executor) => executor.ExecuteAsync(run, workflow, next, null));
                         }
 
@@ -133,14 +133,14 @@ namespace WorkflowEngine
                         if (result.DelayNextAction != null)
                         {
 
-                            var workflowRunId = backgroundJobClient.Schedule<IHangfireActionExecutor>(
+                            var workflowRunId = backgroundJobClient.Schedule<IHangfireActionExecutor>(queue,
                                      (executor) => executor.ExecuteAsync(run, workflow, scopeAction, null),result.DelayNextAction.Value);
                         }
                         else
                         {
 
 
-                            var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                            var workflowRunId = backgroundJobClient.Enqueue<IHangfireActionExecutor>(queue,
                                      (executor) => executor.ExecuteAsync(run, workflow, scopeAction, null));
                         }
                         //await outputRepository.EndScope(run, workflow, action);
@@ -177,8 +177,8 @@ namespace WorkflowEngine
         /// <param name="triggerContext"></param>
         /// <returns></returns>
         public async ValueTask<object> TriggerAsync(ITriggerContext triggerContext, PerformContext context = null)
-        { 
-            
+        {
+            var queue = context.BackgroundJob.Job.Queue ?? "default";
             triggerContext.RunId = triggerContext.RunId == Guid.Empty ? Guid.NewGuid() : triggerContext.RunId;
             triggerContext.JobId = context?.BackgroundJob.Id;
 
@@ -187,7 +187,7 @@ namespace WorkflowEngine
 
             if (action != null)
             {   
-                var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(
+                var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(queue,
                             (executor) => executor.ExecuteAsync(triggerContext, triggerContext.Workflow, action, null));
             }
             return action;
