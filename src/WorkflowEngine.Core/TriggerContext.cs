@@ -27,6 +27,7 @@ namespace WorkflowEngine.Core
     }
     public class TriggerContext : ITriggerContext, IFormattable
     {
+        public string Queue { get; set; }
         public IWorkflow Workflow { get; set; }
         public ITrigger Trigger { get; set; }
         public string PrincipalId { get; set; }

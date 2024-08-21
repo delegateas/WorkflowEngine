@@ -35,7 +35,7 @@ namespace WorkflowEngine
         public static string TriggerAsync<TTriggerContext>(this IBackgroundJobClient backgroundJobClient, TTriggerContext trigger)
             where TTriggerContext : TriggerContext
         {
-            var job = backgroundJobClient.Enqueue<IHangfireWorkflowExecutor>(
+            var job = backgroundJobClient.Enqueue<IHangfireWorkflowExecutor>(trigger.Queue ?? "default",
                         (executor) => executor.TriggerAsync(trigger, null));
 
             return job;

@@ -1,6 +1,7 @@
 using Hangfire;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,10 @@ using WorkflowEngine.Core;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
+    public class WorkflowStarterBackgroundJobOptions
+    {
+        public string QueueName { get; set; } = "default";
+    }
     public class WorkflowStarterBackgroundJob : BackgroundService
     {
         private readonly IServiceScopeFactory _serviceScopeFactory;
@@ -31,6 +36,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 var workflows = sp.GetRequiredService<IWorkflowRepository>();
                 var jobs = sp.GetRequiredService<IRecurringJobManager>();
                 var configuration = sp.GetRequiredService<IConfiguration>();
+                var options = sp.GetRequiredService<IOptions<WorkflowStarterBackgroundJobOptions>>();
+
 
                 foreach (var workflow in await workflows.GetAllWorkflows())
                 {
@@ -52,13 +59,15 @@ namespace Microsoft.Extensions.DependencyInjection
 
                             workflow.Manifest = null;
 
-                            jobs.AddOrUpdate(workflow.Id.ToString() + trigger.Key,
+                            jobs.AddOrUpdate(workflow.Id.ToString() + trigger.Key, options.Value.QueueName,
                                  (System.Linq.Expressions.Expression<System.Action<IHangfireWorkflowExecutor>>) ((executor) => executor.TriggerAsync(new TriggerContext
                                  {
+                                     Queue = options.Value.QueueName,
                                      PrincipalId = "1b714972-8d0a-4feb-b166-08d93c6ae328",
                                      Workflow = workflow,
                                      Trigger = new Trigger
                                      {
+                                         
                                          Inputs = trigger.Value.Inputs,
                                          ScheduledTime = DateTimeOffset.UtcNow,
                                          Type = trigger.Value.Type,
@@ -66,7 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection
                                      },
                                  }, null)), trigger.Value.Inputs["cronExpression"] as string,new RecurringJobOptions
                                  {
-                                      TimeZone = GetTimeZone(trigger)
+                                      TimeZone = GetTimeZone(trigger),  
                                  });
 
 
