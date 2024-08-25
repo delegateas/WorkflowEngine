@@ -13,7 +13,7 @@
         <ProjectReference Include="$(LocalExternalpath)/ExpressionEngine/ExpressionEngine/ExpressionEngine.csproj" />
     </ItemGroup>
     <ItemGroup Condition="$(UseEAVFromNuget) != 'false'">
-        <PackageReference Include="Delegate.ExpressionEngine" Version="4.1.2" />
+        <PackageReference Include="Delegate.ExpressionEngine" Version="4.2.0" />
     </ItemGroup>
     <ItemGroup>
      
