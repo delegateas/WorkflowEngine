@@ -9,8 +9,14 @@
         <RepositoryUrl>https://github.com/delegateas/WorkflowEngine</RepositoryUrl>
     </PropertyGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition="$(UseEAVFromNuget) == 'false'">
+        <ProjectReference Include="$(LocalExternalpath)/ExpressionEngine/ExpressionEngine/ExpressionEngine.csproj" />
+    </ItemGroup>
+    <ItemGroup Condition="$(UseEAVFromNuget) != 'false'">
         <PackageReference Include="Delegate.ExpressionEngine" Version="4.1.2" />
+    </ItemGroup>
+    <ItemGroup>
+     
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     </ItemGroup>
