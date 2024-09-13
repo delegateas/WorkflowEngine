@@ -20,6 +20,7 @@ namespace WorkflowEngine.Core
             services.RegisterScopedFunctionAlias<TriggerBodyFunction>("triggerBody");
             services.RegisterScopedFunctionAlias<TriggerOutputsFunction>("triggerOutputs");
             services.RegisterScopedFunctionAlias<OutputsFunction>("outputs");
+            services.RegisterScopedFunctionAlias<OutputsBodyFunction>("outputsBody");
             services.RegisterScopedFunctionAlias<ItemsFunction>("items");
             
            

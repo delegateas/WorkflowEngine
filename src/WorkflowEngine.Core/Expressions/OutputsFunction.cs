@@ -1,4 +1,4 @@
-﻿using ExpressionEngine;
+using ExpressionEngine;
 using ExpressionEngine.Functions.Base;
 using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
