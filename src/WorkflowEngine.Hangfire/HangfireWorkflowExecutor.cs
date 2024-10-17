@@ -88,8 +88,10 @@ namespace WorkflowEngine
             try
             {
                 runContextAccessor.RunContext = run;
-                arrayContext.JobId = context.BackgroundJob.Id;
+              
                 var queue = context.BackgroundJob.Job.Queue ?? "default";
+                arrayContext.JobId = context.BackgroundJob.Id;
+                arrayContext.Queue = queue;
 
                 var result = await actionExecutor.ExecuteAsync(run, workflow, action);
 
@@ -149,6 +151,10 @@ namespace WorkflowEngine
                     {
                         await outputRepository.AddEvent(run, workflow, action, WorkflowEvent.CreateFinishedEvent(context.BackgroundJob.Id, result));
                         throw new InvalidOperationException("Action failed: " + result.FailedReason) { Data = { ["ActionResult"] = result } };
+                    }
+                    else if ( workflow.Manifest.Actions.FindAction(action.Key) is IScopedActionMetadata scopedAction && arrayContext.HasMore)
+                    {
+                        
                     }
                     else
                     {

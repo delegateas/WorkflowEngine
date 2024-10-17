@@ -10,11 +10,15 @@ namespace WorkflowEngine.Core.Actions
 {
     public interface IArrayContext
     {
-        public string JobId { get; set; }
+        string JobId { get; set; }
+        string Queue { get; set; }
+        bool HasMore { get; set; }
     }
     public class ArrayContext : IArrayContext
     {
         public string JobId { get; set; }
+        public string Queue { get; set; }
+        public bool HasMore { get; set; }
     }
 
     public class ForeachAction : IActionImplementation
@@ -35,7 +39,9 @@ namespace WorkflowEngine.Core.Actions
         {
            
             var loop = workflow.Manifest.Actions.FindAction(action.Key) as ForLoopActionMetadata;
-
+            
+            arrayContext.HasMore = true;
+           
             if (loop.ForEach is string str && str.Contains("@"))
             {
                 var items = await expressionEngine.ParseToValueContainer(str);
@@ -64,6 +70,7 @@ namespace WorkflowEngine.Core.Actions
                     }
                     else if (action.Index < itemsToRunover.Count)
                     {
+                        
                         // var nextAction = new Action { Type = action.Type, Key=action.Key, ScheduledTime = DateTimeOffset.UtcNow, RunId = context.RunId, Index = action.Index+1 };
 
                         var nextactionmetadata = loop.Actions.SingleOrDefault(c => c.Value.RunAfter?.Count == 0);
@@ -73,17 +80,18 @@ namespace WorkflowEngine.Core.Actions
                         var nextaction = context.CopyTo(new Action { Type = nextactionmetadata.Value.Type, Key = $"{action.Key}.{nextactionmetadata.Key}", ScheduledTime = DateTimeOffset.UtcNow, Index = action.Index+1 });
 
                        
-                        var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(arrayContext.JobId,
+                        var a = backgroundJobClient.ContinueJobWith<IHangfireActionExecutor>(arrayContext.JobId, arrayContext.Queue,
                                 (executor) => executor.ExecuteAsync(context, workflow, nextaction, null));
 
                         return new { item = itemsToRunover[action.Index] };
-                    }
+                    } 
 
                 }
             }
 
 
 
+            arrayContext.HasMore = false;
 
             return new { };
         }
