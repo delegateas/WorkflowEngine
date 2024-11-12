@@ -58,6 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
                             }
 
                             workflow.Manifest = null;
+                           
 
                             jobs.AddOrUpdate(workflow.Id.ToString() + trigger.Key, options.Value.QueueName,
                                  (System.Linq.Expressions.Expression<System.Action<IHangfireWorkflowExecutor>>) ((executor) => executor.TriggerAsync(new TriggerContext
@@ -75,7 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
                                      },
                                  }, null)), trigger.Value.Inputs["cronExpression"] as string,new RecurringJobOptions
                                  {
-                                      TimeZone = GetTimeZone(trigger),  
+                                      TimeZone = GetTimeZone(trigger), 
                                  });
 
 

@@ -13,17 +13,17 @@ jobs:
     strategy:
       matrix: 
         include: 
-          - framework: "net6.0"
-            version: 6.0.x
-          - framework: net8.0
+          - framework: "net8.0"
             version: 8.0.x
+          - framework: net9.0
+            version: 9.0.x
     steps:
       - name: Checkout code base
         uses: actions/checkout@v4
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 9.0.x
 
       - name: Run tests
         run: dotnet test --verbosity normal -f ${{ matrix.framework }}
@@ -46,12 +46,12 @@ jobs:
       
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'   
+          dotnet-version: '9.0.x'   
           
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Add plugin for conventional commits
         run: npm install conventional-changelog-conventionalcommits

@@ -192,7 +192,8 @@ namespace WorkflowEngine
             var action = await executor.Trigger(triggerContext);
 
             if (action != null)
-            {   
+            {
+                
                 var a = backgroundJobClient.Enqueue<IHangfireActionExecutor>(queue,
                             (executor) => executor.ExecuteAsync(triggerContext, triggerContext.Workflow, action, null));
             }

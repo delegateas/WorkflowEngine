@@ -11,20 +11,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		.github\workflows\.releaserc = .github\workflows\.releaserc
-		.github\workflows\build.yml = .github\workflows\build.yml
-		.github\workflows\prerelease.yml = .github\workflows\prerelease.yml
 		README.md = README.md
-		.github\workflows\release.yml = .github\workflows\release.yml
-		.github\workflows\todo.yml = .github\workflows\todo.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkflowEngine.Hangfire", "src\WorkflowEngine.Hangfire\WorkflowEngine.Hangfire.csproj", "{7A50D90B-98AE-4B7F-9B39-8828D9ACED5B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{144FC2ED-C165-401D-BDD8-9431B447C96C}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{76AE8C20-E425-4B07-BFAA-536CCF9ED4EB}"
 	ProjectSection(SolutionItems) = preProject
 		.github\dependabot.yml = .github\dependabot.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{93A05ACF-3938-4543-9DA0-CE5D8F389790}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\.releaserc = .github\workflows\.releaserc
+		.github\workflows\build.yml = .github\workflows\build.yml
+		.github\workflows\prerelease.yml = .github\workflows\prerelease.yml
+		.github\workflows\release.yml = .github\workflows\release.yml
+		.github\workflows\todo.yml = .github\workflows\todo.yml
 	EndProjectSection
 EndProject
 Global
@@ -50,7 +53,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{144FC2ED-C165-401D-BDD8-9431B447C96C} = {0749C5E8-52D4-4B3A-89EA-891DD156A056}
+		{93A05ACF-3938-4543-9DA0-CE5D8F389790} = {76AE8C20-E425-4B07-BFAA-536CCF9ED4EB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {56ADE641-E5CE-4AED-AB11-4D507F8C0816}
